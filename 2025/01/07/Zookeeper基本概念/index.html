@@ -1,0 +1,760 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>Zookeeper基本概念 - 求知之旅</title>
+
+  
+    <meta name="description" content="数据结构 基本结构以znode为数据节点的层次化的多叉树形结构，每个znode由stat（状态信息）和data（具体数据）组成    znode 4 种类型  持久（PERSISTENT）节点 ：一旦创建就一直存在即使 ZooKeeper 集群宕机，直到将其删除。 临时（EPHEMERAL）节点 ：临时节点的生命周期是与 客户端会话（session） 绑定的，会话消失则节点消失 。并且，临时节点只">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Zookeeper基本概念">
+<meta property="og:url" content="http://example.com/2025/01/07/Zookeeper%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="数据结构 基本结构以znode为数据节点的层次化的多叉树形结构，每个znode由stat（状态信息）和data（具体数据）组成    znode 4 种类型  持久（PERSISTENT）节点 ：一旦创建就一直存在即使 ZooKeeper 集群宕机，直到将其删除。 临时（EPHEMERAL）节点 ：临时节点的生命周期是与 客户端会话（session） 绑定的，会话消失则节点消失 。并且，临时节点只">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/24fa293220ffccdf4a68ccad93c4e6d9.png">
+<meta property="og:image" content="http://example.com/images/c248d69f308bf2dd6ec5682cf2380d79.png">
+<meta property="og:image" content="http://example.com/images/8395661edbc23e8cebe11d9fa172e15d.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.781Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.007Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/24fa293220ffccdf4a68ccad93c4e6d9.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Zookeeper/">Zookeeper</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.781Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.007Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Zookeeper基本概念</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h1><ul>
+<li>基本结构<br><em>以znode为数据节点的层次化的多叉树形结构，每个znode由stat（状态信息）和data（具体数据）组成</em></li>
+</ul>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/24fa293220ffccdf4a68ccad93c4e6d9.png"></p>
+<ul>
+<li>znode 4 种类型 <ul>
+<li>持久（PERSISTENT）节点 ：一旦创建就一直存在即使 ZooKeeper 集群宕机，直到将其删除。</li>
+<li>临时（EPHEMERAL）节点 ：临时节点的生命周期是与 客户端会话（session） 绑定的，会话消失则节点消失 。并且，临时节点只能做叶子节点 ，不能创建子节点。<strong>这一特点在分布式中非常有用，比如很多中间件将zookeeper作为服务中心，临时节点有很大的功劳，比如中间件一个节点下线，那么zookeeper中的临时节点会因为会话关闭而被删除，基于watcher机制将通知中间件其他节点，时效性很高</strong></li>
+<li>持久顺序（PERSISTENT_SEQUENTIAL）节点 ：除了具有持久（PERSISTENT）节点的特性之外， 子节点的名称还具有顺序性。比如 &#x2F;node1&#x2F;app0000000001 、&#x2F;node1&#x2F;app0000000002 。</li>
+<li>临时顺序（EPHEMERAL_SEQUENTIAL）节点 ：除了具备临时（EPHEMERAL）节点的特性之外，子节点的名称还具有顺序性。</li>
+</ul>
+</li>
+<li>znode状态信息解释</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>znode 状态信息</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>cZxid</td>
+<td>create ZXID，即该数据节点被创建时的事务 id</td>
+</tr>
+<tr>
+<td>ctime</td>
+<td>create time，即该节点的创建时间</td>
+</tr>
+<tr>
+<td>mZxid</td>
+<td>modified ZXID，即该节点最终一次更新时的事务 id</td>
+</tr>
+<tr>
+<td>mtime</td>
+<td>modified time，即该节点最后一次的更新时间</td>
+</tr>
+<tr>
+<td>pZxid</td>
+<td>该节点的子节点列表最后一次修改时的事务 id，只有子节点列表变更才会更新 pZxid，子节点内容变更不会更新</td>
+</tr>
+<tr>
+<td>cversion</td>
+<td>子节点版本号，当前节点的子节点每次变化时值增加 1</td>
+</tr>
+<tr>
+<td>dataVersion</td>
+<td>数据节点内容版本号，节点创建时为 0，每更新一次节点内容(不管内容有无变化)该版本号的值增加 1</td>
+</tr>
+<tr>
+<td>aclVersion</td>
+<td>节点的 ACL 版本号，表示该节点 ACL 信息变更次数</td>
+</tr>
+<tr>
+<td>ephemeralOwner</td>
+<td>创建该临时节点的会话的 sessionId；如果当前节点为持久节点，则 ephemeralOwner&#x3D;0</td>
+</tr>
+<tr>
+<td>dataLength</td>
+<td>数据节点内容长度</td>
+</tr>
+<tr>
+<td>numChildren</td>
+<td>当前节点的子节点个数</td>
+</tr>
+</tbody></table>
+<h1 id="zookeeper-写入过程"><a href="#zookeeper-写入过程" class="headerlink" title="zookeeper 写入过程"></a>zookeeper 写入过程</h1><p>每次客户端对zookeeper进行更新时，会先写磁盘的事务日志，再把数据存入内存数据库中，后面定期会对内存数据库做一次快照存入磁盘<br><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/c248d69f308bf2dd6ec5682cf2380d79.png"></p>
+<h1 id="Watcher机制"><a href="#Watcher机制" class="headerlink" title="Watcher机制"></a>Watcher机制</h1><pre><code>   **Watcher（事件监听器），是 ZooKeeper 中的一个很重要的特性。ZooKeeper 允许用户在指定节点上注册一些 Watcher，并且在一些特定事件触发的时候，ZooKeeper 服务端会将事件通知到感兴趣的客户端上去，该机制是 ZooKeeper 实现分布式协调服务的重要特性。**
+</code></pre>
+<h1 id="ZooKeeper-集群"><a href="#ZooKeeper-集群" class="headerlink" title="ZooKeeper 集群"></a>ZooKeeper 集群</h1><h2 id="集群角色"><a href="#集群角色" class="headerlink" title="集群角色"></a>集群角色</h2><pre><code>   ZooKeeper 中没有选择传统的 Master/Slave 概念，而是引入了 Leader、Follower 和 Observer 三种角色。如下图所示  
+</code></pre>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/8395661edbc23e8cebe11d9fa172e15d.png"></p>
+<ul>
+<li>Leader：为客户端提供读和写的服务，负责投票的发起和决议，更新系统状态。 </li>
+<li>Follow：为客户端提供读服务，如果是写服务则转发给 Leader。参与选举过程中的投票。 </li>
+<li>Observer：为客户端提供读服务，如果是写服务则转发给 Leader。也不参与“过半写成功”策略。不参与选举过程中的投票。</li>
+</ul>
+<h2 id="服务器状态"><a href="#服务器状态" class="headerlink" title="服务器状态"></a>服务器状态</h2><ul>
+<li>LOOKING ：寻找 Leader。 </li>
+<li>LEADING ：Leader 状态，对应的节点为 Leader。 </li>
+<li>FOLLOWING ：Follower 状态，对应的节点为 Follower。 </li>
+<li>OBSERVING ：Observer 状态，对应节点为 Observer，该节点不参与 Leader 选举。</li>
+</ul>
+<h2 id="过半机制"><a href="#过半机制" class="headerlink" title="过半机制"></a>过半机制</h2><pre><code>   ZooKeeper 集群在宕掉几个 ZooKeeper 服务器之后，如果剩下的 ZooKeeper 服务器个数大于宕掉的个数的话整个 ZooKeeper 才依然可用。  
+</code></pre>
+<p>  所以设置zookeeper集群机器数最好为奇数，因为2n 和 2n-1 的容忍度是一样的，都是 n-1。<br>  比如假如我们有 3 台，那么最大允许宕掉 1 台 ZooKeeper 服务器，如果我们有 4 台的的时候也同样只允许宕掉 1 台。 假如我们有 5 台，那么最大允许宕掉 2 台 ZooKeeper 服务器，如果我们有 6 台的的时候也同样只允许宕掉 2 台。综上，何必增加那一个不必要的 ZooKeeper 呢？<br>  过半机制还可以防止集群脑裂（既整个集群因为网络等原因分成了两个或多个小集群，而每个小集群都会选举出自己的leader，当整个集群回复通信的时候，就会出现多个leader的情况），而过半机制的存在，让整个集群哪怕出现故障也最多仅有一个小集群可以存活</p>
+<h1 id="Zookeeper命令"><a href="#Zookeeper命令" class="headerlink" title="Zookeeper命令"></a>Zookeeper命令</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_42402854/article/details/124775663">参考文章</a></p>
+<h2 id="ls命令"><a href="#ls命令" class="headerlink" title="ls命令"></a>ls命令</h2><p>查看目录下的节点信息<br>ls [-s] [-w] [-R] path </p>
+<ul>
+<li>-s：展示出节点的详细信息和状态信息 </li>
+<li>-w：添加watch（监听子节点变化） </li>
+<li>-R：展示节点的级联（包括自己和子节点）</li>
+</ul>
+<h2 id="stat命令"><a href="#stat命令" class="headerlink" title="stat命令"></a>stat命令</h2><p>查看目录下状态信息<br>stat [-w] path </p>
+<ul>
+<li>-w：添加watch</li>
+</ul>
+<h2 id="create命令"><a href="#create命令" class="headerlink" title="create命令"></a>create命令</h2><p>创建节点，默认持久节点<br>create [-s] [-e] [-c] [-t ttl] path [data] [acl] </p>
+<ul>
+<li>-s：有序节点 </li>
+<li>-e：临时节点 </li>
+<li>-t：带过期时间节点，比如：create ‐t 10 &#x2F;ttl，需要在 zoo.cfg中添加 extendedTypesEnabled&#x3D;true 开启，不能用于临时节点</li>
+</ul>
+<h2 id="set命令"><a href="#set命令" class="headerlink" title="set命令"></a>set命令</h2><p>修改节点内容<br>set [-s] [-v version] path data </p>
+<ul>
+<li>-s：更新节点并显示状态信息 </li>
+<li>-v：指定数据版本号，如果指定版本号与当前版本号不一致，则更新失败，如set -v 1 &#x2F;v “hello”</li>
+</ul>
+<h2 id=""><a href="#" class="headerlink" title=""></a></h2><p>get命令</p>
+<p>获取节点内容<br>get [-s] [-w] path </p>
+<ul>
+<li>-s：获取节点内容以及状态信息 </li>
+<li>-w：添加一个watch（监听节点数据变化）</li>
+</ul>
+<h2 id="delete命令"><a href="#delete命令" class="headerlink" title="delete命令"></a>delete命令</h2><p>删除节点<br>delete [-v version] path </p>
+<ul>
+<li>-v：指定数据版本号，如果指定版本号与当前版本号不一致，则删除失败，如delete -v 1 &#x2F;v “hello”</li>
+</ul>
+<h2 id="deleteall命令"><a href="#deleteall命令" class="headerlink" title="deleteall命令"></a>deleteall命令</h2><p>级联删除该节点和子节点<br>deleteall path [-b batch size]</p>
+<h2 id="addWatch命令"><a href="#addWatch命令" class="headerlink" title="addWatch命令"></a>addWatch命令</h2><p>在 Zookeeper 3.6.0版本之后，客户端可以在节点上创建永久监听，永久监听在被触发后不会被删除。<br>addWatch [-m mode] path </p>
+<ul>
+<li>-m:指定模式 <ol>
+<li>PERSISTENT：该节点的数据变化以及子节点的变化会触发相应事件，子节点的数据变化不会触发。</li>
+<li>PERSISTENT_RECURSIVE：该节点的数据变化以及所有子孙节点的目录或者数据变化都会触发相应事件。</li>
+</ol>
+</li>
+</ul>
+<h2 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h2><ul>
+<li>history：显示最近执行的11条命令的历史记录 </li>
+<li>getAllChildrenNumber：获取节点下的所有子孙节点数量 </li>
+<li>getEphemerals：获取当前客户端创建的所有临时节点</li>
+</ul>
+<h2 id="ACL"><a href="#ACL" class="headerlink" title="ACL"></a>ACL</h2><ul>
+<li>scheme：代表采用某种权限机制 </li>
+<li>id：代表允许访问的用户 </li>
+<li>permissions：代表权限（组合字符串）</li>
+</ul>
+<h3 id="scheme：权限策略"><a href="#scheme：权限策略" class="headerlink" title="scheme：权限策略"></a>scheme：权限策略</h3><ul>
+<li>world : world下只有一个id，即只有一个用户，也就是anyone，那么组合的写法就是world:anyone:[permissions]。 world:anyone 代表任何人，zookeeper 中对所有人有权限的结点就是属于 world:anyone 的。 </li>
+<li>auth：代表认证登录，需要注册用户有权限就可以，使用的是明文密码，形式为auth:user:password:[permissions]。<br>它不需要 id, 只要是通过 authentication 的 user 都有权限（zookeeper 支持通过 kerberos来进行 </li>
+<li>authencation，也支持 username&#x2F;password 形式的 authentication)。 </li>
+<li>digest：需要对密码加密才能访问，使用的是加密密码，组合形式为digest: username:BASE64(SHA1(password)) :[permissions]。 </li>
+<li>ip：它对应的 id 为客户机的 IP 地址，设置的时候可以设置一个 ip 段，此时限制ip进行访问。比如ip:192.168.1.1:[permissions] </li>
+<li>super：代表超级管理员，拥有所有的权限</li>
+</ul>
+<h3 id="id：用户"><a href="#id：用户" class="headerlink" title="id：用户"></a>id：用户</h3><p>id 是验证模式，不同的 scheme，id 的值也不一样。默认为anyone。</p>
+<ul>
+<li>scheme 为 auth 时，id为：username:password</li>
+<li>scheme 为 digest 时，id为：username:BASE64(SHA1(password))</li>
+<li>scheme 为 ip 时，id为：客户端的 ip 地址。</li>
+<li>scheme 为 world 时，id为：anyone。</li>
+</ul>
+<h3 id="permission：权限"><a href="#permission：权限" class="headerlink" title="permission：权限"></a>permission：权限</h3><p>Zookeeper定义了五种权限：</p>
+<ul>
+<li>CREATE(c)：创建子节点的权限。允许创建子节点；</li>
+<li>DELETE(d)：删除节点的权限。允许删除子节点；</li>
+<li>READ(r)：读取节点数据的权限。允许从节点获取数据并列出其子节点；</li>
+<li>WRITE(w)：修改节点数据的权限。允许为节点设置数据；</li>
+<li>ADMIN(a)：设置子节点权限的权限，允许为节点设置权限。</li>
+</ul>
+<p>CREATE、READ、WRITE、DELETE、ADMIN 也就是增、删、改、查、管理权限，这 5 种权限简写为 crwda（即单词的首字符缩写）。</p>
+<h3 id="getAcl命令"><a href="#getAcl命令" class="headerlink" title="getAcl命令"></a>getAcl命令</h3><p>查看指定节点 ACL信息<br>getAcl [-s] path</p>
+<ul>
+<li>-s：查看节点详细信息</li>
+</ul>
+<h3 id="setAcl命令"><a href="#setAcl命令" class="headerlink" title="setAcl命令"></a>setAcl命令</h3><p>设置指定节点的ACL 信息<br>setAcl [-s] [-v version] [-R] path acl</p>
+<h3 id="addauth命令"><a href="#addauth命令" class="headerlink" title="addauth命令"></a>addauth命令</h3><p>addauth命令：添加认证用户<br>命令格式：addauth scheme auth</p>
+<ul>
+<li>scheme：（digest：是授权方式）格式为：digest username:password</li>
+<li>auth：就是分配权限， crwda。如果不写时表示创建用户，可以通过setAcl命令来设置权限</li>
+</ul>
+<h1 id="Zookeeper-集群搭建"><a href="#Zookeeper-集群搭建" class="headerlink" title="Zookeeper 集群搭建"></a>Zookeeper 集群搭建</h1><h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>zoo.cfg需要加入以下配置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#不同节点需要配置不同的端口，ip不同的话不用考虑端口</span><br><span class="line">clientPort=2181</span><br><span class="line">#2001为集群通信端口，3001为集群选举端口，observer（观察者身份）</span><br><span class="line">server.1=127.0.0.1:2001:3001</span><br><span class="line">server.2=127.0.0.1:2002:3002</span><br><span class="line">server.3=127.0.0.1:2003:3003</span><br><span class="line">#server.4=127.0.0.1:2004:3004:observer</span><br></pre></td></tr></table></figure>
+
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/RabbitMQ/">RabbitMQ</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/RocketMQ/">RocketMQ</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">数据结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#zookeeper-%E5%86%99%E5%85%A5%E8%BF%87%E7%A8%8B"><span class="toc-text">zookeeper 写入过程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Watcher%E6%9C%BA%E5%88%B6"><span class="toc-text">Watcher机制</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ZooKeeper-%E9%9B%86%E7%BE%A4"><span class="toc-text">ZooKeeper 集群</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E8%A7%92%E8%89%B2"><span class="toc-text">集群角色</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%8A%B6%E6%80%81"><span class="toc-text">服务器状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%87%E5%8D%8A%E6%9C%BA%E5%88%B6"><span class="toc-text">过半机制</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Zookeeper%E5%91%BD%E4%BB%A4"><span class="toc-text">Zookeeper命令</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ls%E5%91%BD%E4%BB%A4"><span class="toc-text">ls命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#stat%E5%91%BD%E4%BB%A4"><span class="toc-text">stat命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#create%E5%91%BD%E4%BB%A4"><span class="toc-text">create命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#set%E5%91%BD%E4%BB%A4"><span class="toc-text">set命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link"><span class="toc-text"></span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#delete%E5%91%BD%E4%BB%A4"><span class="toc-text">delete命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#deleteall%E5%91%BD%E4%BB%A4"><span class="toc-text">deleteall命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#addWatch%E5%91%BD%E4%BB%A4"><span class="toc-text">addWatch命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E5%91%BD%E4%BB%A4"><span class="toc-text">其他命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ACL"><span class="toc-text">ACL</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#scheme%EF%BC%9A%E6%9D%83%E9%99%90%E7%AD%96%E7%95%A5"><span class="toc-text">scheme：权限策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#id%EF%BC%9A%E7%94%A8%E6%88%B7"><span class="toc-text">id：用户</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#permission%EF%BC%9A%E6%9D%83%E9%99%90"><span class="toc-text">permission：权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#getAcl%E5%91%BD%E4%BB%A4"><span class="toc-text">getAcl命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setAcl%E5%91%BD%E4%BB%A4"><span class="toc-text">setAcl命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#addauth%E5%91%BD%E4%BB%A4"><span class="toc-text">addauth命令</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Zookeeper-%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA"><span class="toc-text">Zookeeper 集群搭建</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE"><span class="toc-text">配置</span></a></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

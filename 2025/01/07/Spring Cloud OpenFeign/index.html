@@ -1,0 +1,626 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>Spring Cloud OpenFeign - 求知之旅</title>
+
+  
+    <meta name="description" content="依赖1234&lt;dependency&gt;  &lt;groupId&gt;org.springframework.cloud&lt;&#x2F;groupId&gt;  &lt;artifactId&gt;spring-cloud-starter-openfeign&lt;&#x2F;artifactId&gt;&lt;&#x2F;dependency&gt;  代码**需要feign生效，需要在配置类上加上@Enab">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud OpenFeign">
+<meta property="og:url" content="http://example.com/2025/01/07/Spring%20Cloud%20OpenFeign/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="依赖1234&lt;dependency&gt;  &lt;groupId&gt;org.springframework.cloud&lt;&#x2F;groupId&gt;  &lt;artifactId&gt;spring-cloud-starter-openfeign&lt;&#x2F;artifactId&gt;&lt;&#x2F;dependency&gt;  代码**需要feign生效，需要在配置类上加上@Enab">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-01-07T13:03:37.204Z">
+<meta property="article:modified_time" content="2025-01-07T13:04:12.358Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Spring-Cloud/">Spring Cloud</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:03:37.204Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:04:12.358Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Spring Cloud OpenFeign</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="依赖"><a href="#依赖" class="headerlink" title="依赖"></a>依赖</h1><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-openfeign<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><p>**需要feign生效，需要在配置类上加上@EnableFeignClients，**然后就是针对不同服务进行编码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//name这里可以自定义，但是最好为服务名（url默认为http://&lt;name&gt;），如果自定义name的话，则需要配置url，path可以理解为路径通用前缀</span></span><br><span class="line"><span class="meta">@FeignClient(name = &quot;user-center&quot;, path=&quot;/user&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">UserCenterFeignClient</span> &#123;</span><br><span class="line">    <span class="meta">@GetMapping(&quot;/getPort&quot;)</span></span><br><span class="line">    String <span class="title function_">getUserCenterPort</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/findById/&#123;id&#125;&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">findById</span><span class="params">(<span class="meta">@PathVariable(&quot;id&quot;)</span> String id)</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/modifyBonusById&quot;)</span></span><br><span class="line">    UserDTO <span class="title function_">modifyBonusById</span><span class="params">(<span class="meta">@RequestBody</span> UserModifyBonusMsgDTO userModifyBonusMsgDTO)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>@FeignClient本质就是通过feign.Feign类生成一个代理类，具体是通过feign.Feign#newInstance方法生成代理类</p>
+<h1 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h1><p>feign使用的负载均衡也是spring cloud commons下面的loadbalancer，具体参考RetryableFeignBlockingLoadBalancerClient类，RetryableFeignBlockingLoadBalancerClient实现了Client，但是Client不止有这一个实现类，只是这一个实现类整合了spring重试的功能</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Response <span class="title function_">execute</span><span class="params">(Request request, Request.Options options)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">    <span class="type">URI</span> <span class="variable">originalUri</span> <span class="operator">=</span> URI.create(request.url());</span><br><span class="line">    <span class="type">String</span> <span class="variable">serviceId</span> <span class="operator">=</span> originalUri.getHost();</span><br><span class="line">    Assert.state(serviceId != <span class="literal">null</span>, <span class="string">&quot;Request URI does not contain a valid hostname: &quot;</span> + originalUri);</span><br><span class="line">    <span class="type">LoadBalancedRetryPolicy</span> <span class="variable">retryPolicy</span> <span class="operator">=</span> <span class="built_in">this</span>.loadBalancedRetryFactory.createRetryPolicy(serviceId, <span class="built_in">this</span>.loadBalancerClient);</span><br><span class="line">    <span class="type">RetryTemplate</span> <span class="variable">retryTemplate</span> <span class="operator">=</span> <span class="built_in">this</span>.buildRetryTemplate(serviceId, request, retryPolicy);</span><br><span class="line">    <span class="keyword">return</span> (Response)retryTemplate.execute((context) -&gt; &#123;</span><br><span class="line">        <span class="type">Request</span> <span class="variable">feignRequest</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        <span class="type">ServiceInstance</span> <span class="variable">retrievedServiceInstance</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">        Set&lt;LoadBalancerLifecycle&gt; supportedLifecycleProcessors = LoadBalancerLifecycleValidator.getSupportedLifecycleProcessors(<span class="built_in">this</span>.loadBalancerClientFactory.getInstances(serviceId, LoadBalancerLifecycle.class), RetryableRequestContext.class, ResponseData.class, ServiceInstance.class);</span><br><span class="line">        <span class="type">String</span> <span class="variable">hint</span> <span class="operator">=</span> <span class="built_in">this</span>.getHint(serviceId);</span><br><span class="line">        DefaultRequest&lt;RetryableRequestContext&gt; lbRequest = <span class="keyword">new</span> <span class="title class_">DefaultRequest</span>(<span class="keyword">new</span> <span class="title class_">RetryableRequestContext</span>((ServiceInstance)<span class="literal">null</span>, LoadBalancerUtils.buildRequestData(request), hint));</span><br><span class="line">        <span class="keyword">if</span> (context <span class="keyword">instanceof</span> LoadBalancedRetryContext) &#123;</span><br><span class="line">            <span class="type">LoadBalancedRetryContext</span> <span class="variable">lbContext</span> <span class="operator">=</span> (LoadBalancedRetryContext)context;</span><br><span class="line">            retrievedServiceInstance = lbContext.getServiceInstance();</span><br><span class="line">            <span class="keyword">if</span> (retrievedServiceInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (LOG.isDebugEnabled()) &#123;</span><br><span class="line">                    LOG.debug(<span class="string">&quot;Service instance retrieved from LoadBalancedRetryContext: was null. Reattempting service instance selection&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="type">ServiceInstance</span> <span class="variable">previousServiceInstance</span> <span class="operator">=</span> lbContext.getPreviousServiceInstance();</span><br><span class="line">                ((RetryableRequestContext)lbRequest.getContext()).setPreviousServiceInstance(previousServiceInstance);</span><br><span class="line">                supportedLifecycleProcessors.forEach((lifecycle) -&gt; &#123;</span><br><span class="line">                    lifecycle.onStart(lbRequest);</span><br><span class="line">                &#125;);</span><br><span class="line">                retrievedServiceInstance = <span class="built_in">this</span>.loadBalancerClient.choose(serviceId, lbRequest);</span><br><span class="line">                <span class="keyword">if</span> (LOG.isDebugEnabled()) &#123;</span><br><span class="line">                    LOG.debug(String.format(<span class="string">&quot;Selected service instance: %s&quot;</span>, retrievedServiceInstance));</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                lbContext.setServiceInstance(retrievedServiceInstance);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (retrievedServiceInstance == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (LOG.isWarnEnabled()) &#123;</span><br><span class="line">                    LOG.warn(<span class="string">&quot;Service instance was not resolved, executing the original request&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                org.springframework.cloud.client.loadbalancer.Response&lt;ServiceInstance&gt; lbResponsex = <span class="keyword">new</span> <span class="title class_">DefaultResponse</span>(retrievedServiceInstance);</span><br><span class="line">                supportedLifecycleProcessors.forEach((lifecycle) -&gt; &#123;</span><br><span class="line">                    lifecycle.onComplete(<span class="keyword">new</span> <span class="title class_">CompletionContext</span>(Status.DISCARD, lbRequest, lbResponsex));</span><br><span class="line">                &#125;);</span><br><span class="line">                feignRequest = request;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (LOG.isDebugEnabled()) &#123;</span><br><span class="line">                    LOG.debug(String.format(<span class="string">&quot;Using service instance from LoadBalancedRetryContext: %s&quot;</span>, retrievedServiceInstance));</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="type">String</span> <span class="variable">reconstructedUrl</span> <span class="operator">=</span> <span class="built_in">this</span>.loadBalancerClient.reconstructURI(retrievedServiceInstance, originalUri).toString();</span><br><span class="line">                feignRequest = <span class="built_in">this</span>.buildRequest(request, reconstructedUrl);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        org.springframework.cloud.client.loadbalancer.Response&lt;ServiceInstance&gt; lbResponse = <span class="keyword">new</span> <span class="title class_">DefaultResponse</span>(retrievedServiceInstance);</span><br><span class="line">        <span class="type">LoadBalancerProperties</span> <span class="variable">loadBalancerProperties</span> <span class="operator">=</span> <span class="built_in">this</span>.loadBalancerClientFactory.getProperties(serviceId);</span><br><span class="line">        <span class="type">Response</span> <span class="variable">response</span> <span class="operator">=</span> LoadBalancerUtils.executeWithLoadBalancerLifecycleProcessing(<span class="built_in">this</span>.delegate, options, feignRequest, lbRequest, lbResponse, supportedLifecycleProcessors, retrievedServiceInstance != <span class="literal">null</span>, loadBalancerProperties.isUseRawStatusCodeInResponseData());</span><br><span class="line">        <span class="type">int</span> <span class="variable">responseStatus</span> <span class="operator">=</span> response.status();</span><br><span class="line">        <span class="keyword">if</span> (retryPolicy != <span class="literal">null</span> &amp;&amp; retryPolicy.retryableStatusCode(responseStatus)) &#123;</span><br><span class="line">            <span class="keyword">if</span> (LOG.isDebugEnabled()) &#123;</span><br><span class="line">                LOG.debug(String.format(<span class="string">&quot;Retrying on status code: %d&quot;</span>, responseStatus));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="type">byte</span>[] byteArray = response.body() == <span class="literal">null</span> ? <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">0</span>] : StreamUtils.copyToByteArray(response.body().asInputStream());</span><br><span class="line">            response.close();</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">LoadBalancerResponseStatusCodeException</span>(serviceId, response, byteArray, URI.create(request.url()));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> response;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="keyword">new</span> <span class="title class_">LoadBalancedRecoveryCallback</span>&lt;Response, Response&gt;() &#123;</span><br><span class="line">        <span class="keyword">protected</span> Response <span class="title function_">createResponse</span><span class="params">(Response response, URI uri)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> response;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>execute方法中retrievedServiceInstance &#x3D; this.loadBalancerClient.choose(serviceId, lbRequest);这一行代码就是通过负载获取服务，其中loadBalancerClient就是spring cloud commons下面loadbalancer包中的类，org.springframework.cloud.client.loadbalancer.LoadBalancerClient，RestTemplate使用的也是这个类，所以feign和RestTemplate的负载逻辑差不多，既可以使用ribbon，也可以使用loadBalancer</p>
+<h1 id="更换http客户端"><a href="#更换http客户端" class="headerlink" title="更换http客户端"></a>更换http客户端</h1><p>feign默认使用的是HttpUrlConnection进行http通信，但是feign也可以整合apache httpclient和okhttp，上面提到的RetryableFeignBlockingLoadBalancerClient有一个delegate变量，它就是feign的http客户端，从代码层面来讲，它和RetryableFeignBlockingLoadBalancerClient一样实现了Client，从某种意义上来讲，Client本身就是http客户端，只不过RetryableFeignBlockingLoadBalancerClient没有直接实现http客户端的功能，而是实现了其他的功能，通过delegate变量实现的http客户端，我认为这也是一种装饰模式，delegate默认情况下是feign.Client.Default类，而Default使用的就是HttpUrlConnection</p>
+<p>整合apache httpclient需要引入依赖</p>
+<h2 id="依赖-1"><a href="#依赖-1" class="headerlink" title="依赖"></a>依赖</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.openfeign<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>feign-httpclient<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">httpclient:</span></span><br><span class="line">    <span class="comment">#设置feign访问方式</span></span><br><span class="line">    <span class="attr">enabled:</span> <span class="literal">false</span></span><br><span class="line">    <span class="comment">#feign最大连接数</span></span><br><span class="line">    <span class="attr">max-connections:</span> <span class="number">200</span></span><br><span class="line">    <span class="comment">#feign单个路劲最大连接数</span></span><br><span class="line">    <span class="attr">max-connections-per-route:</span> <span class="number">50</span></span><br></pre></td></tr></table></figure>
+
+<p>通过引入依赖和配置，RetryableFeignBlockingLoadBalancerClient的delegate变成了feign.httpclient.ApacheHttpClient，而ApacheHttpClient使用的就是apache httpclient</p>
+<h2 id="如何生效的"><a href="#如何生效的" class="headerlink" title="如何生效的"></a>如何生效的</h2><p>具体生效主要是通过HttpClientFeignLoadBalancerConfiguration</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration(</span></span><br><span class="line"><span class="meta">    proxyBeanMethods = false</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="meta">@ConditionalOnClass(&#123;ApacheHttpClient.class&#125;)</span></span><br><span class="line"><span class="meta">@ConditionalOnBean(&#123;LoadBalancerClient.class, LoadBalancerClientFactory.class&#125;)</span></span><br><span class="line"><span class="meta">@ConditionalOnProperty(</span></span><br><span class="line"><span class="meta">    value = &#123;&quot;feign.httpclient.enabled&quot;&#125;,</span></span><br><span class="line"><span class="meta">    matchIfMissing = true</span></span><br><span class="line"><span class="meta">)</span></span><br><span class="line"><span class="meta">@Conditional(&#123;HttpClient5DisabledConditions.class&#125;)</span></span><br><span class="line"><span class="meta">@Import(&#123;HttpClientFeignConfiguration.class&#125;)</span></span><br><span class="line"><span class="meta">@EnableConfigurationProperties(&#123;LoadBalancerClientsProperties.class&#125;)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HttpClientFeignLoadBalancerConfiguration</span> &#123;</span><br><span class="line">    HttpClientFeignLoadBalancerConfiguration() &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@ConditionalOnMissingBean</span></span><br><span class="line">    <span class="meta">@Conditional(&#123;OnRetryNotEnabledCondition.class&#125;)</span></span><br><span class="line">    <span class="keyword">public</span> Client <span class="title function_">feignClient</span><span class="params">(LoadBalancerClient loadBalancerClient, HttpClient httpClient, LoadBalancerClientFactory loadBalancerClientFactory)</span> &#123;</span><br><span class="line">        <span class="type">ApacheHttpClient</span> <span class="variable">delegate</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ApacheHttpClient</span>(httpClient);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FeignBlockingLoadBalancerClient</span>(delegate, loadBalancerClient, loadBalancerClientFactory);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@ConditionalOnMissingBean</span></span><br><span class="line">    <span class="meta">@ConditionalOnClass(</span></span><br><span class="line"><span class="meta">        name = &#123;&quot;org.springframework.retry.support.RetryTemplate&quot;&#125;</span></span><br><span class="line"><span class="meta">    )</span></span><br><span class="line">    <span class="meta">@ConditionalOnBean(&#123;LoadBalancedRetryFactory.class&#125;)</span></span><br><span class="line">    <span class="meta">@ConditionalOnProperty(</span></span><br><span class="line"><span class="meta">        value = &#123;&quot;spring.cloud.loadbalancer.retry.enabled&quot;&#125;,</span></span><br><span class="line"><span class="meta">        havingValue = &quot;true&quot;,</span></span><br><span class="line"><span class="meta">        matchIfMissing = true</span></span><br><span class="line"><span class="meta">    )</span></span><br><span class="line">    <span class="keyword">public</span> Client <span class="title function_">feignRetryClient</span><span class="params">(LoadBalancerClient loadBalancerClient, HttpClient httpClient, LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory)</span> &#123;</span><br><span class="line">        <span class="type">ApacheHttpClient</span> <span class="variable">delegate</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ApacheHttpClient</span>(httpClient);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RetryableFeignBlockingLoadBalancerClient</span>(delegate, loadBalancerClient, loadBalancedRetryFactory, loadBalancerClientFactory);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从代码中可以看出，feign.httpclient.enabled配置就是在HttpClientFeignLoadBalancerConfiguration类中起作用的，而RetryableFeignBlockingLoadBalancerClient的delegate变成ApacheHttpClient是因为HttpClientFeignLoadBalancerConfiguration向spring注册了一个新的RetryableFeignBlockingLoadBalancerClient，而这个RetryableFeignBlockingLoadBalancerClient的delegate被HttpClientFeignLoadBalancerConfiguration配置成了ApacheHttpClient，而ApacheHttpClient构造函数的参数就是apache httpclient的HttpClient类，这里ApacheHttpClient的HttpClient参数使用的是spring的bean，所以我们可以通过向spring注册一个新的apache HttpClient，达到我们想要的一些配置</p>
+<h1 id="自定义http客户端"><a href="#自定义http客户端" class="headerlink" title="自定义http客户端"></a>自定义http客户端</h1><p>参考上面的HttpClientFeignLoadBalancerConfiguration我们也可以自己配置使用何种http客户端，配置http客户端主要就是通过注册新的RetryableFeignBlockingLoadBalancerClient（甚至直接注册新的feign Client，但是这样会导致失去RetryableFeignBlockingLoadBalancerClient的功能），也需要解决两个问题，就是将feign的请求转为我们自己客户端的请求，并且将我们自己客户端的响应转为feign的响应，这两步我们暂时直接使用feign-httpclient的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HttpClientFeignLoadBalancerConfiguration</span> &#123;</span><br><span class="line">    HttpClientFeignLoadBalancerConfiguration() &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@ConditionalOnMissingBean</span></span><br><span class="line">    <span class="keyword">public</span> Client <span class="title function_">feignRetryClient</span><span class="params">(LoadBalancerClient loadBalancerClient, LoadBalancedRetryFactory loadBalancedRetryFactory, LoadBalancerClientFactory loadBalancerClientFactory)</span> &#123;</span><br><span class="line">        <span class="type">MyHttpClient</span> <span class="variable">delegate</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">MyHttpClient</span>(HttpClients.createDefault());</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">RetryableFeignBlockingLoadBalancerClient</span>(delegate, loadBalancerClient, loadBalancedRetryFactory, loadBalancerClientFactory);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyHttpClient</span> <span class="keyword">implements</span> <span class="title class_">Client</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> HttpClient httpClient;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> <span class="title function_">MyHttpClient</span><span class="params">(HttpClient httpClient)</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.httpClient = httpClient;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> Response <span class="title function_">execute</span><span class="params">(Request request, Request.Options options)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">            <span class="type">HttpUriRequest</span> <span class="variable">httpUriRequest</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                httpUriRequest = toHttpUriRequest(request, options);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (URISyntaxException e) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="type">HttpResponse</span> <span class="variable">httpResponse</span> <span class="operator">=</span> httpClient.execute(httpUriRequest);</span><br><span class="line">            <span class="keyword">return</span> toFeignResponse(httpResponse, request);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        HttpUriRequest <span class="title function_">toHttpUriRequest</span><span class="params">(Request request, Request.Options options)</span> <span class="keyword">throws</span> URISyntaxException &#123;</span><br><span class="line">            <span class="type">RequestBuilder</span> <span class="variable">requestBuilder</span> <span class="operator">=</span> RequestBuilder.create(request.httpMethod().name());</span><br><span class="line"></span><br><span class="line">            <span class="comment">// per request timeouts</span></span><br><span class="line">            <span class="type">RequestConfig</span> <span class="variable">requestConfig</span> <span class="operator">=</span></span><br><span class="line">            (httpClient <span class="keyword">instanceof</span> Configurable ? RequestConfig.copy(((Configurable) httpClient).getConfig())</span><br><span class="line">             : RequestConfig.custom())</span><br><span class="line">            .setConnectTimeout(options.connectTimeoutMillis())</span><br><span class="line">            .setSocketTimeout(options.readTimeoutMillis())</span><br><span class="line">            .build();</span><br><span class="line">            requestBuilder.setConfig(requestConfig);</span><br><span class="line"></span><br><span class="line">            <span class="type">URI</span> <span class="variable">uri</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">URIBuilder</span>(request.url()).build();</span><br><span class="line"></span><br><span class="line">            requestBuilder.setUri(uri.getScheme() + <span class="string">&quot;://&quot;</span> + uri.getAuthority() + uri.getRawPath());</span><br><span class="line"></span><br><span class="line">            <span class="comment">// request query params</span></span><br><span class="line">            List&lt;NameValuePair&gt; queryParams =</span><br><span class="line">            URLEncodedUtils.parse(uri, requestBuilder.getCharset());</span><br><span class="line">            <span class="keyword">for</span> (NameValuePair queryParam : queryParams) &#123;</span><br><span class="line">                requestBuilder.addParameter(queryParam);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// request headers</span></span><br><span class="line">            <span class="type">boolean</span> <span class="variable">hasAcceptHeader</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">            <span class="keyword">for</span> (Map.Entry&lt;String, Collection&lt;String&gt;&gt; headerEntry : request.headers().entrySet()) &#123;</span><br><span class="line">                <span class="type">String</span> <span class="variable">headerName</span> <span class="operator">=</span> headerEntry.getKey();</span><br><span class="line">                <span class="keyword">if</span> (headerName.equalsIgnoreCase(<span class="string">&quot;Accept&quot;</span>)) &#123;</span><br><span class="line">                    hasAcceptHeader = <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (headerName.equalsIgnoreCase(Util.CONTENT_LENGTH)) &#123;</span><br><span class="line">                    <span class="comment">// The &#x27;Content-Length&#x27; header is always set by the Apache client and it</span></span><br><span class="line">                    <span class="comment">// doesn&#x27;t like us to set it as well.</span></span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">for</span> (String headerValue : headerEntry.getValue()) &#123;</span><br><span class="line">                    requestBuilder.addHeader(headerName, headerValue);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// some servers choke on the default accept string, so we&#x27;ll set it to anything</span></span><br><span class="line">            <span class="keyword">if</span> (!hasAcceptHeader) &#123;</span><br><span class="line">                requestBuilder.addHeader(<span class="string">&quot;Accept&quot;</span>, <span class="string">&quot;*/*&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// request body</span></span><br><span class="line">            <span class="keyword">if</span> (request.body() != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="type">HttpEntity</span> <span class="variable">entity</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">                <span class="keyword">if</span> (request.charset() != <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="type">ContentType</span> <span class="variable">contentType</span> <span class="operator">=</span> getContentType(request);</span><br><span class="line">                    <span class="type">String</span> <span class="variable">content</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(request.body(), request.charset());</span><br><span class="line">                    entity = <span class="keyword">new</span> <span class="title class_">StringEntity</span>(content, contentType);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    entity = <span class="keyword">new</span> <span class="title class_">ByteArrayEntity</span>(request.body());</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                requestBuilder.setEntity(entity);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                requestBuilder.setEntity(<span class="keyword">new</span> <span class="title class_">ByteArrayEntity</span>(<span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">0</span>]));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> requestBuilder.build();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> ContentType <span class="title function_">getContentType</span><span class="params">(Request request)</span> &#123;</span><br><span class="line">            <span class="type">ContentType</span> <span class="variable">contentType</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">            <span class="keyword">for</span> (Map.Entry&lt;String, Collection&lt;String&gt;&gt; entry : request.headers().entrySet())</span><br><span class="line">                <span class="keyword">if</span> (entry.getKey().equalsIgnoreCase(<span class="string">&quot;Content-Type&quot;</span>)) &#123;</span><br><span class="line">                    Collection&lt;String&gt; values = entry.getValue();</span><br><span class="line">                    <span class="keyword">if</span> (values != <span class="literal">null</span> &amp;&amp; !values.isEmpty()) &#123;</span><br><span class="line">                        contentType = ContentType.parse(values.iterator().next());</span><br><span class="line">                        <span class="keyword">if</span> (contentType.getCharset() == <span class="literal">null</span>) &#123;</span><br><span class="line">                            contentType = contentType.withCharset(request.charset());</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            <span class="keyword">return</span> contentType;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Response <span class="title function_">toFeignResponse</span><span class="params">(HttpResponse httpResponse, Request request)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">            <span class="type">StatusLine</span> <span class="variable">statusLine</span> <span class="operator">=</span> httpResponse.getStatusLine();</span><br><span class="line">            <span class="type">int</span> <span class="variable">statusCode</span> <span class="operator">=</span> statusLine.getStatusCode();</span><br><span class="line"></span><br><span class="line">            <span class="type">String</span> <span class="variable">reason</span> <span class="operator">=</span> statusLine.getReasonPhrase();</span><br><span class="line"></span><br><span class="line">            Map&lt;String, Collection&lt;String&gt;&gt; headers = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;String, Collection&lt;String&gt;&gt;();</span><br><span class="line">            <span class="keyword">for</span> (Header header : httpResponse.getAllHeaders()) &#123;</span><br><span class="line">                <span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> header.getName();</span><br><span class="line">                <span class="type">String</span> <span class="variable">value</span> <span class="operator">=</span> header.getValue();</span><br><span class="line"></span><br><span class="line">                Collection&lt;String&gt; headerValues = headers.get(name);</span><br><span class="line">                <span class="keyword">if</span> (headerValues == <span class="literal">null</span>) &#123;</span><br><span class="line">                    headerValues = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;String&gt;();</span><br><span class="line">                    headers.put(name, headerValues);</span><br><span class="line">                &#125;</span><br><span class="line">                headerValues.add(value);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> Response.builder()</span><br><span class="line">                    .status(statusCode)</span><br><span class="line">                    .reason(reason)</span><br><span class="line">                    .headers(headers)</span><br><span class="line">                    .request(request)</span><br><span class="line">                    .body(toFeignBody(httpResponse))</span><br><span class="line">                    .build();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Response.Body <span class="title function_">toFeignBody</span><span class="params">(HttpResponse httpResponse)</span> &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">HttpEntity</span> <span class="variable">entity</span> <span class="operator">=</span> httpResponse.getEntity();</span><br><span class="line">            <span class="keyword">if</span> (entity == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Response</span>.Body() &#123;</span><br><span class="line"></span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">public</span> Integer <span class="title function_">length</span><span class="params">()</span> &#123;</span><br><span class="line">                    <span class="keyword">return</span> entity.getContentLength() &gt;= <span class="number">0</span> &amp;&amp; entity.getContentLength() &lt;= Integer.MAX_VALUE</span><br><span class="line">                            ? (<span class="type">int</span>) entity.getContentLength()</span><br><span class="line">                            : <span class="literal">null</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isRepeatable</span><span class="params">()</span> &#123;</span><br><span class="line">                    <span class="keyword">return</span> entity.isRepeatable();</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">public</span> InputStream <span class="title function_">asInputStream</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">                    <span class="keyword">return</span> entity.getContent();</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="meta">@SuppressWarnings(&quot;deprecation&quot;)</span></span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">public</span> Reader <span class="title function_">asReader</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(asInputStream(), UTF_8);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">public</span> Reader <span class="title function_">asReader</span><span class="params">(Charset charset)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">                    Util.checkNotNull(charset, <span class="string">&quot;charset should not be null&quot;</span>);</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">InputStreamReader</span>(asInputStream(), charset);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">close</span><span class="params">()</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">                    EntityUtils.consume(entity);</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        EntityUtils.consume(entity);</span><br><span class="line">                    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> (httpResponse <span class="keyword">instanceof</span> CloseableHttpResponse)</span><br><span class="line">                            ((CloseableHttpResponse) httpResponse).close();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过以上代码，就可以将我们自己的配置的RetryableFeignBlockingLoadBalancerClient注册到spring，并且feign就会使用我们配置的RetryableFeignBlockingLoadBalancerClient</p>
+<h1 id="拦截器"><a href="#拦截器" class="headerlink" title="拦截器"></a>拦截器</h1><h2 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a>代码</h2><p>最上面有提到，@FeignClient的本质就是feign.Feign生成代理类，而在生成代理类的时候，feign有一个配置拦截器的过程（具体参考feign.Feign类），feign拦截器需要实现feign.RequestInterceptor类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FeignHeaderInterceptor</span> <span class="keyword">implements</span> <span class="title class_">RequestInterceptor</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">apply</span><span class="params">(RequestTemplate requestTemplate)</span> &#123;</span><br><span class="line">        <span class="comment">//下面三句话为springboot获取request的通用方法</span></span><br><span class="line">        <span class="type">RequestAttributes</span> <span class="variable">requestAttributes</span> <span class="operator">=</span> RequestContextHolder.getRequestAttributes();</span><br><span class="line">        <span class="type">ServletRequestAttributes</span> <span class="variable">attributes</span> <span class="operator">=</span> (ServletRequestAttributes) requestAttributes;</span><br><span class="line">        <span class="type">HttpServletRequest</span> <span class="variable">request</span> <span class="operator">=</span> attributes.getRequest();</span><br><span class="line">        <span class="type">String</span> <span class="variable">token</span> <span class="operator">=</span> request.getHeader(<span class="string">&quot;X-Token&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (token != <span class="literal">null</span>) &#123;</span><br><span class="line">            requestTemplate.header(<span class="string">&quot;X-Token&quot;</span>, token);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>feign使拦截器生效有三种方式</p>
+<h2 id="全局配置"><a href="#全局配置" class="headerlink" title="全局配置"></a>全局配置</h2><p>全局配置就是将拦截器注册到spring，这样的话，feign在构建任何一个feignclient的代理类时都会将这个拦截器配置进去，也就是对所有的feignclient都有效</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">FeignConfiguration</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> RequestInterceptor <span class="title function_">feignHeaderInterceptor</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FeignHeaderInterceptor</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="局部配置"><a href="#局部配置" class="headerlink" title="局部配置"></a>局部配置</h2><h3 id="配置文件方式"><a href="#配置文件方式" class="headerlink" title="配置文件方式"></a>配置文件方式</h3><p>spring cloud feign提供了配置文件的方式配置拦截器</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">feign:</span></span><br><span class="line">  <span class="attr">client:</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">user-center:</span> <span class="comment">#该项可填写@feignclient的name，若填写为default，则为全局配置</span></span><br><span class="line">        <span class="comment">#配置feign拦截器</span></span><br><span class="line">        <span class="attr">requestInterceptors:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="string">com.pengtong.contentcenter.feignclient.interceptor.FeignHeaderInterceptor</span></span><br></pre></td></tr></table></figure>
+
+<p>而配置文件的方式主要就是通过org.springframework.cloud.openfeign.FeignClientProperties类完成的，FeignClientProperties有一个config变量，config变量是一个Map&lt;String, FeignClientConfiguration&gt;对象，key就是配置的feign-name，FeignClientConfiguration就是feign的一些配置，所以这种方式不一定只是配置拦截器，具体参考org.springframework.cloud.openfeign.FeignClientProperties.FeignClientConfiguration类，当key是“default”时，就是全局配置</p>
+<h3 id="代码方式"><a href="#代码方式" class="headerlink" title="代码方式"></a>代码方式</h3><p>上面提到了@FeignClient注解，这个注解有一个configuration属性，这个属性就是对该feign进行一些配置，而具体的配置类就是使用@Bean对需要配置的属性进行设置，但是不使用@Configuration（不使用@Configuration代表不注册到spring），fegin会读取这个配置类中的使用了@Bean类进行配置，属于spring的一种机制。这里也不限制于拦截器，具体可以配置哪些属性可以参考FeignClientConfiguration类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient(name = &quot;user-center&quot;, configuration = &#123;UserCenterConfig.class&#125;)</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserCenterConfig</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> RequestInterceptor <span class="title function_">requestInterceptor</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FeignHeaderInterceptor</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这种方式主要就是靠org.springframework.context.annotation.AnnotationConfigApplicationContext，它继承了org.springframework.beans.factory.BeanFactory，举个例子</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UserCenterConfig</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> RequestInterceptor <span class="title function_">requestInterceptor</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">FeignHeaderInterceptor</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">AnnotationConfigApplicationContext</span> <span class="variable">context</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AnnotationConfigApplicationContext</span>(UserCenterConfig.class);</span><br><span class="line">        Map&lt;String, RequestInterceptor&gt; requestInterceptorMap = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, RequestInterceptor.class);</span><br><span class="line">        System.out.println(requestInterceptorMap);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/Java%20%E5%90%84%E7%A7%8D%E6%95%B0%E5%AD%97%E7%B1%BB%E5%9E%8B%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F/">Java 各种数字类型存储格式</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9B%B8%E5%85%B3%E6%A6%82%E5%BF%B5/">文件系统相关概念</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96"><span class="toc-text">依赖</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81"><span class="toc-text">代码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc-text">负载均衡</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9B%B4%E6%8D%A2http%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-text">更换http客户端</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96-1"><span class="toc-text">依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE"><span class="toc-text">配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E7%94%9F%E6%95%88%E7%9A%84"><span class="toc-text">如何生效的</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89http%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-text">自定义http客户端</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8B%A6%E6%88%AA%E5%99%A8"><span class="toc-text">拦截器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81-1"><span class="toc-text">代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE"><span class="toc-text">全局配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E9%85%8D%E7%BD%AE"><span class="toc-text">局部配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E6%96%B9%E5%BC%8F"><span class="toc-text">配置文件方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E6%96%B9%E5%BC%8F"><span class="toc-text">代码方式</span></a></li></ol></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

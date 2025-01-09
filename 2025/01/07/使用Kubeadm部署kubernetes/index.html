@@ -1,0 +1,703 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>使用Kubeadm部署kubernetes - 求知之旅</title>
+
+  
+    <meta name="description" content="前言使用minikube部署kubernetes，实际上就是在主机上运行一个container，在容器中部署kubernetes，容器可以是docker，这种方式可以提前做好准备（包括环境、需要的镜像等），只需要用户下载好，运行即可，在本机部署测试比较方便，但是实际上的kubernetes是要直接部署在主机上的，这样才能构建多个主机组成的kubernetes集群 另外部署kubernetes需要一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Kubeadm部署kubernetes">
+<meta property="og:url" content="http://example.com/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="前言使用minikube部署kubernetes，实际上就是在主机上运行一个container，在容器中部署kubernetes，容器可以是docker，这种方式可以提前做好准备（包括环境、需要的镜像等），只需要用户下载好，运行即可，在本机部署测试比较方便，但是实际上的kubernetes是要直接部署在主机上的，这样才能构建多个主机组成的kubernetes集群 另外部署kubernetes需要一">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/efe37f2f6469c80759af162d9c02526f.png">
+<meta property="og:image" content="http://example.com/images/814d13e361ffe9e546ab32af2d542987.png">
+<meta property="og:image" content="http://example.com/images/5588aaa6c5e9b1fe05ac09551d5cbd08.png">
+<meta property="og:image" content="http://example.com/images/86f3a3f0bc34d8059aa11b5d80068f37.png">
+<meta property="og:image" content="http://example.com/images/b1e987261d9cadc96dd3991b01d237d2.png">
+<meta property="og:image" content="http://example.com/images/7c5518da04b215ad87abb8b41e3726fd.png">
+<meta property="og:image" content="http://example.com/images/2dc971829f428292296c517048643b2f.png">
+<meta property="og:image" content="http://example.com/images/041222f66070bfc56a5ae1ce320ed8db.png">
+<meta property="og:image" content="http://example.com/images/35405b7469763c18fe9041ecfedb4a42.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.749Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.037Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/efe37f2f6469c80759af162d9c02526f.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E9%83%A8%E7%BD%B2%E8%BF%90%E7%BB%B4/">部署运维</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.749Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.037Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>使用Kubeadm部署kubernetes</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>使用minikube部署kubernetes，实际上就是在主机上运行一个container，在容器中部署kubernetes，容器可以是docker，这种方式可以提前做好准备（包括环境、需要的镜像等），只需要用户下载好，运行即可，在本机部署测试比较方便，但是实际上的kubernetes是要直接部署在主机上的，这样才能构建多个主机组成的kubernetes集群</p>
+<p>另外部署kubernetes需要一定的硬件条件，可以网上搜索，一般就是至少两核cpu、2G内存、20G硬盘</p>
+<p>本次安装的是1.23版本，对于最新的<font style="color:rgb(34, 34, 34);">1.32来说，算比较老的版本了，所以在有些地方会有一点区别</font></p>
+<p>部署参考文档：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/Sunzz/p/15184167.html">安装Kubernetes(k8s)</a></p>
+<p><font style="color:rgb(34, 34, 34);">阿里云kubernetes参考文档：</font><a target="_blank" rel="noopener" href="https://www.aliyun.com/getting-started/what-is/what-is-kubernetes?spm=a2c4g.11186623.0.0.5f301e85Nh3s4B">什么是Kubernetes（K8s）</a></p>
+<h1 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h1><h2 id="关闭防火墙"><a href="#关闭防火墙" class="headerlink" title="关闭防火墙"></a>关闭防火墙</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop firewalld    #关闭firewalld</span><br><span class="line">systemctl disable firewalld #禁止开启自启firewalld</span><br><span class="line">iptables -F                 #清除iptables规则</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(25, 27, 31);">关闭防火墙的原因（nftables后端兼容性问题，产生重复的防火墙规则）</font></p>
+<blockquote>
+<p>The<code>iptables</code>tooling can act as a compatibility layer, behaving like iptables but actually configuring nftables. This nftables backend is not compatible with the current kubeadm packages: it causes duplicated firewall rules and breaks<code>kube-proxy</code></p>
+</blockquote>
+<p>上面是老版本官方文档的说法，但是新版本文档中没有这段内容了，但是没有具体测试是否还有此问题</p>
+<h2 id="关闭selinux"><a href="#关闭selinux" class="headerlink" title="关闭selinux"></a>关闭selinux</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setenforce 0  //临时关闭</span><br><span class="line">编辑/etc/selinux/config，修改&#x27;SELINUX=enforcing&#x27;为&#x27;SELINUX=disabled&#x27; //永久关闭，需要重启系统</span><br></pre></td></tr></table></figure>
+
+<p>关闭selinux的原因（关闭selinux以允许容器访问宿主机的文件系统）</p>
+<blockquote>
+<p>Setting SELinux in permissive mode by running<code>setenforce 0</code>and<code>sed ...</code>effectively disables it. This is required to allow containers to access the host filesystem, which is needed by pod networks for example. You have to do this until SELinux support is improved in the kubelet</p>
+</blockquote>
+<p>上面是老版本官方文档的说法，但是新版本文档中没有这段内容了，但是没有具体测试是否还有此问题</p>
+<h2 id="关闭swap分区"><a href="#关闭swap分区" class="headerlink" title="关闭swap分区"></a>关闭swap分区</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">swapoff -a    //临时关闭</span><br><span class="line">编辑/etc/fstab，找到任何以&#x27;swap&#x27;结尾的行，并在其前面加上&#x27;#&#x27; //永久关闭，需要重启系统</span><br></pre></td></tr></table></figure>
+
+<p>关闭swap的原因，主要是因为内存管理导致的一些问题，在老版本上是必须关闭的，<strong>不关闭swap的话，kubelet会直接启动失败</strong>，但是新版本做出了一些调整，也可以打开swap分区，但是默认还是必须关闭，需要通过配置开启kubelet支持swap分区，具体参考官方文档：<a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#swap-configuration">交换分区的配置</a></p>
+<p>知乎参考：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/374752553">为什么要关闭swap、selinux、firewalld</a></p>
+<h2 id="修改内核参数"><a href="#修改内核参数" class="headerlink" title="修改内核参数"></a>修改内核参数</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; /etc/sysctl.d/k8s.conf &lt;&lt; EOF</span><br><span class="line">net.bridge.bridge-nf-call-ip6tables = 1  //控制着 Linux 系统中桥接流量是否被传递给 ip6tables 防火墙规则处理</span><br><span class="line">net.bridge.bridge-nf-call-iptables = 1   //决定了桥接的 IPv4 流量是否会被传递给 iptables 防火墙规则进行处理</span><br><span class="line">net.ipv4.ip_forward = 1                  //控制着系统是否可以转发 IPv4 数据包</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">sysctl --system //使配置生效</span><br></pre></td></tr></table></figure>
+
+<p>关于设置net.ipv4.ip_forward &#x3D; 1，官方有说明需要配置：<a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/setup/production-environment/container-runtimes/#prerequisite-ipv4-forwarding-optional">启用 IPv4 数据包转发</a>；而其他两个是网上参考文档中说明需要配置的，暂时未在官方文档中找到有说明，可以参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/best_luxi/article/details/121823983">K8s为啥要启用bridge-nf-call-iptables内核参数</a></p>
+<h2 id="加载ip-vs内核模块"><a href="#加载ip-vs内核模块" class="headerlink" title="加载ip_vs内核模块"></a><font style="color:rgb(51, 51, 51);">加载ip_vs内核模块</font></h2><p><font style="color:rgb(58, 65, 69);">kube-proxy组件支持不同的代理模式，网上的说法是ip_vs性能比iptables更好，所以尽可能使用ip_vs，默认使用的是iptables，可以参考</font><a target="_blank" rel="noopener" href="https://blog.csdn.net/yujia_666/article/details/121637843">kube-proxy 切换 proxy mode</a></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/efe37f2f6469c80759af162d9c02526f.png"></p>
+<p><font style="color:rgb(58, 65, 69);">如果kube-proxy 模式为ip_vs则必须加载</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">modprobe ip_vs</span><br><span class="line">modprobe ip_vs_rr</span><br><span class="line">modprobe ip_vs_wrr</span><br><span class="line">modprobe ip_vs_sh</span><br><span class="line">modprobe nf_conntrack_ipv4</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(58, 65, 69);">设置下次开机自动加载</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; /etc/modules-load.d/ip_vs.conf &lt;&lt; EOF </span><br><span class="line">ip_vs</span><br><span class="line">ip_vs_rr</span><br><span class="line">ip_vs_wrr</span><br><span class="line">ip_vs_sh</span><br><span class="line">nf_conntrack_ipv4</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<h2 id="修改本地hosts文件"><a href="#修改本地hosts文件" class="headerlink" title="修改本地hosts文件"></a><font style="color:rgb(51, 51, 51);">修改本地hosts文件</font></h2><p>这一步是为集群做准备，编辑<font style="color:rgb(58, 65, 69);">&#x2F;etc&#x2F;hosts，每台服务器都需要配置上集群中所有节点的主机名和ip（必要时修改可以通过hostnamectl set-hostname命令修改服务器的主机名），类似以下这种</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">192.168.68.106 master.local</span><br><span class="line">192.168.68.107 node01.local</span><br><span class="line">192.168.68.108 node02.local</span><br></pre></td></tr></table></figure>
+
+<h2 id="容器运行时"><a href="#容器运行时" class="headerlink" title="容器运行时"></a>容器运行时</h2><p><font style="color:rgb(34, 34, 34);">本次安装测试使用的容器运行时是docker，安装参考：</font><a target="_blank" rel="noopener" href="https://developer.aliyun.com/mirror/docker-ce?spm=a2c6h.13651102.0.0.57e31b11jhHwZt">阿里云docker-ce镜像</a></p>
+<p><font style="color:rgb(34, 34, 34);">需要注意k8s后面的版本不再支持docker作为容器运行时（需要额外安装cri-docker），推荐containerd</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/814d13e361ffe9e546ab32af2d542987.png"></p>
+<h1 id="安装kubeadm、kubectl、kubelet"><a href="#安装kubeadm、kubectl、kubelet" class="headerlink" title="安装kubeadm、kubectl、kubelet"></a>安装kubeadm、kubectl、kubelet</h1><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><ol>
+<li><font style="color:rgb(44, 44, 54);">kubeadm：是一个用于快速部署 Kubernetes 集群的命令行工具。它简化了集群初始化过程，并提供了建立安全最佳实践配置的途径，包括kubeadm init（创建集群）、kubeadm join（加入集群）等功能</font></li>
+<li><font style="color:rgb(44, 44, 54);">kubectl：与 Kubernetes API 交互的命令行工具，用于管理和控制 Kubernetes 集群中的资源，包括deployment、pod等资源，是我们实际应用过程中使用最多的命令</font></li>
+<li><font style="color:rgb(44, 44, 54);">kubelet：与上面两个不同，kubelet不是命令行工具，而是一个服务，它需要在正常启动的状态下才会进行工作，它的主要职责是确保容器都按照预期运行，并且负责与主节点通信以报告节点的状态，它的主要功能就是管理pod，在通过kubeadm命令建立或者加入集群后，下面的工作基本就是靠kubelet了，它会负责启动所有pod，包括服务器重启后，也是kubelet启动所有的pod，使整个k8s恢复工作</font></li>
+</ol>
+<h2 id="配置yum源"><a href="#配置yum源" class="headerlink" title="配置yum源"></a><font style="color:rgb(51, 51, 51);">配置yum源</font></h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo</span><br><span class="line">[kubernetes]</span><br><span class="line">name=Kubernetes</span><br><span class="line">baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">repo_gpgcheck=1</span><br><span class="line">gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+<p>以上命令就是设置阿里的镜像源，目的是为了加快kubeadm这些工具的下载速度，这里有个地方需要注意，在v1.24.0开始仓库发生了变化，在配置时需要注意当前版本，具体参考：<a target="_blank" rel="noopener" href="https://developer.aliyun.com/mirror/kubernetes?spm=a2c6h.13651102.0.0.70be1b111YLt0w">阿里云Kubernetes镜像</a></p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a><font style="color:rgb(51, 51, 51);">安装</font></h2><p>安装指定版本的kubeadm,kubelet,kubectl，这里安装v1.23.0，网上说好像通过阿里云拉取最新版本的镜像时会有问题，需要注意</p>
+<p>:::tips<br>yum install -y kubelet-1.23.0 kubeadm-1.23.0 kubectl-1.23.0 &#x2F;&#x2F;-y代表安装过程中所有选项都选yes</p>
+<p>:::</p>
+<p>之前也有说到kubelet是一个服务，所以设置开机自启</p>
+<p>:::tips<br>systemctl enable kubelet</p>
+<p>:::</p>
+<p><strong>安装完成后遇到一个问题，就是kubelet启动不起来，看日志说是少了什么配置文件，后来网上搜了一下，在执行kubeadm init或者kubeadm join后，会自动生成这个配置文件，kubelet也会自动启动好（没有其他问题的情况下）</strong></p>
+<p>另外kubelet启动还需要和<font style="color:rgb(51, 51, 51);">容器运行时</font>使用一样的cgroup<font style="color:rgb(44, 44, 54);">驱动，这部分内容可以参考官方：</font><a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/setup/production-environment/container-runtimes/#cgroup-drivers">cgroup 驱动</a></p>
+<ol>
+<li><font style="color:rgb(44, 44, 54);">可以</font>通过以下命令查看kubelet当前使<font style="color:rgb(44, 44, 54);">用的驱动</font></li>
+</ol>
+<p>:::tips<br><font style="color:rgb(51, 51, 51);">cat &#x2F;var&#x2F;lib&#x2F;kubelet&#x2F;config.yaml | grep cgroupDriver</font></p>
+<p>:::</p>
+<ol start="2">
+<li>然后就是配置容器运行时的驱动了，这里以docker举例，在&#x2F;etc&#x2F;docker&#x2F;daemon.json中设置以下内容，如果文件中已经有内容了，则将下面大括号里的配置加入到原先内容的大括号当中，配置完重启docker即可</li>
+</ol>
+<p>:::tips<br>{“exec-opts”: [“native.cgroupdriver&#x3D;systemd”]}</p>
+<p>:::</p>
+<h1 id="部署Kubernetes-Master节点"><a href="#部署Kubernetes-Master节点" class="headerlink" title="部署Kubernetes Master节点"></a>部署Kubernetes Master节点</h1><p>通过kubeadm构建kubernetes集群可参考官方文档：<a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/">使用kubeadm创建集群</a></p>
+<p>在主节点服务器上执行以下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kubeadm init \</span><br><span class="line">  --kubernetes-version 1.23.0 \</span><br><span class="line">  --apiserver-advertise-address=0.0.0.0 \</span><br><span class="line">  --service-cidr=10.96.0.0/16 \</span><br><span class="line">  --pod-network-cidr=10.245.0.0/16 \</span><br><span class="line">  --image-repository registry.aliyuncs.com/google_containers</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>–kubernetes-version：指定版本，需要和上边安装的kubelet,kubead,kubectl保持一致</li>
+<li>–apiserver-advertise-address：为通告给其它组件的IP，一般应为master节点的IP地址</li>
+<li>–service-cidr：指定service网络，不能和node网络冲突</li>
+<li>–pod-network-cidr：指定pod网络，不能和node网络、service网络冲突</li>
+<li>–image-repository：定镜像源，由于默认拉取镜像地址k8s.gcr.io国内无法访问，这里指定阿里云镜像仓库地址，如果k8s版本比较新，可能阿里云没有对应的镜像，就需要自己从其它地方获取镜像了。</li>
+</ol>
+<p>下面正常启动下的日志，包括拉取镜像（也可以提前拉取，比如通过kubeadm –kubernetes-version 1.23.0 config images pull）、创建配置文件等</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/5588aaa6c5e9b1fe05ac09551d5cbd08.png"></p>
+<p>下面是启动成功后的日志</p>
+<ol>
+<li>第一个红框是本机配置kubectl需要执行的命令，分别执行完这几条命令之后，就可以使用kubectl操作kubernetes集群资源了</li>
+<li>第二个红框是启动服务器再加入kubernetes集群时，需要执行的命令，所以这条命令需要记录下来</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/86f3a3f0bc34d8059aa11b5d80068f37.png"></p>
+<h1 id="部署Kubernetes-Worker节点"><a href="#部署Kubernetes-Worker节点" class="headerlink" title="部署Kubernetes Worker节点"></a>部署Kubernetes Worker节点</h1><p>这里需要注意，在worker节点的服务器上也需要做好环境准备和kubeadm等工具安装的工作，然后在worker节点运行上面记录的命令即可，比如这里是</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubeadm join 192.168.255.101:6443 --token jq3eqc.9y1y3h89kljjipjm \</span><br><span class="line">	--discovery-token-ca-cert-hash sha256:275b115804658388bba00267d5cfd85f04c31d6ab45c141093e890b4d72f5e91</span><br></pre></td></tr></table></figure>
+
+<p>下面是运行成功的日志</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/b1e987261d9cadc96dd3991b01d237d2.png"></p>
+<p>运行完之后，回到主节点执行kubectl get node查看节点状态</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/7c5518da04b215ad87abb8b41e3726fd.png"></p>
+<p>发现两个节点都是NotReady，因为缺失网络插件导致的</p>
+<h1 id="安装网络插件"><a href="#安装网络插件" class="headerlink" title="安装网络插件"></a>安装网络插件</h1><p>具体可以参考官方文档：<a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#pod-network">安装 Pod 网络附加组件</a></p>
+<p>这里安装flannel</p>
+<p>从官网下载yml文件</p>
+<p>:::tips<br>wget <a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml">https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</a></p>
+<p>:::</p>
+<p>修改文件</p>
+<p>修改文件中的Network，使其与kubeadm init中的<font style="color:rgb(58, 65, 69);">pod-network-cidr参数一致</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/2dc971829f428292296c517048643b2f.png"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/041222f66070bfc56a5ae1ce320ed8db.png"></p>
+<p>修改前                                                                         修改后</p>
+<p><font style="color:rgb(58, 65, 69);">然后执行yml文件</font></p>
+<p>:::tips<br><font style="color:rgb(58, 65, 69);">kubectl apply -f kube-flannel.yml</font></p>
+<p>:::</p>
+<p>执行后查看flannel</p>
+<p>:::tips<br>kubectl get pod -n kube-flannel -o wide</p>
+<p>:::</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/35405b7469763c18fe9041ecfedb4a42.png"></p>
+<p>发现启动正常，但是继续查看node，发现仍然是NotReady</p>
+<p>查看kube-system命名空间的pod</p>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/Arthas/">Arthas</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/">使用Minikube部署kubernetes</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%87%86%E5%A4%87"><span class="toc-text">环境准备</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%97%AD%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">关闭防火墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%97%ADselinux"><span class="toc-text">关闭selinux</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%97%ADswap%E5%88%86%E5%8C%BA"><span class="toc-text">关闭swap分区</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E5%86%85%E6%A0%B8%E5%8F%82%E6%95%B0"><span class="toc-text">修改内核参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BDip-vs%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97"><span class="toc-text">加载ip_vs内核模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9%E6%9C%AC%E5%9C%B0hosts%E6%96%87%E4%BB%B6"><span class="toc-text">修改本地hosts文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C%E6%97%B6"><span class="toc-text">容器运行时</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%89%E8%A3%85kubeadm%E3%80%81kubectl%E3%80%81kubelet"><span class="toc-text">安装kubeadm、kubectl、kubelet</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEyum%E6%BA%90"><span class="toc-text">配置yum源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85"><span class="toc-text">安装</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2Kubernetes-Master%E8%8A%82%E7%82%B9"><span class="toc-text">部署Kubernetes Master节点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2Kubernetes-Worker%E8%8A%82%E7%82%B9"><span class="toc-text">部署Kubernetes Worker节点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E7%BD%91%E7%BB%9C%E6%8F%92%E4%BB%B6"><span class="toc-text">安装网络插件</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

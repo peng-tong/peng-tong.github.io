@@ -1,0 +1,730 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>ElasticSearch基础 - 求知之旅</title>
+
+  
+    <meta name="description" content="基本的APIapi官方文档  测试分词器apimethod：posturl：http:&#x2F;&#x2F;localhost:9200&#x2F;_analyzebody：  1234&#123;	&quot;text&quot;: &quot;中华五千年华夏&quot;,	&quot;analyzer&quot;: &quot;ik_smart&quot;&#125;   新建索引apimethod：puturl：htt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ElasticSearch基础">
+<meta property="og:url" content="http://example.com/2025/01/07/ElasticSearch%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="基本的APIapi官方文档  测试分词器apimethod：posturl：http:&#x2F;&#x2F;localhost:9200&#x2F;_analyzebody：  1234&#123;	&quot;text&quot;: &quot;中华五千年华夏&quot;,	&quot;analyzer&quot;: &quot;ik_smart&quot;&#125;   新建索引apimethod：puturl：htt">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/cdbdc73623896546a0ff5fc0affdb5b9.png">
+<meta property="og:image" content="http://example.com/images/79fb9961e2364bc3fca856ede099d0cd.png">
+<meta property="og:image" content="http://example.com/images/255cb9754d804f2b30ea95ae663cfc33.png">
+<meta property="og:image" content="http://example.com/images/7dd4b450d63d20e3f85cd8afd4d868f9.png">
+<meta property="og:image" content="http://example.com/images/9de9619289abe4800dfd60b9d819d22e.png">
+<meta property="og:image" content="http://example.com/images/a786be5a06dd5b0d5b13a14c473cf970.png">
+<meta property="og:image" content="http://example.com/images/cc3d1fbeae153051ab17abcbf4e7c31c.png">
+<meta property="og:image" content="http://example.com/images/c174091b3a59e1e953b734fffca31ea8.png">
+<meta property="og:image" content="http://example.com/images/52a8d074895402cf81a59cbfcc1edd90.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.857Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:57.983Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/cdbdc73623896546a0ff5fc0affdb5b9.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/ElasticSearch/">ElasticSearch</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.857Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:57.983Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>ElasticSearch基础</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="基本的API"><a href="#基本的API" class="headerlink" title="基本的API"></a>基本的API</h1><p><a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/rest-apis.html">api官方文档</a></p>
+<ol>
+<li>测试分词器api<br>method：post<br>url：<a target="_blank" rel="noopener" href="http://localhost:9200/_analyze">http://localhost:9200/_analyze</a><br>body：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;text&quot;: &quot;中华五千年华夏&quot;,</span><br><span class="line">	&quot;analyzer&quot;: &quot;ik_smart&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>新建索引api<br>method：put<br>url：<a target="_blank" rel="noopener" href="http://localhost:9200/student">http://localhost:9200/student</a><br>body：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;settings&quot;: &#123;</span><br><span class="line">		&quot;index&quot;: &#123;</span><br><span class="line">			&quot;number_of_shards&quot;: 3,</span><br><span class="line">			&quot;number_of_replicas&quot;: 3</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;,</span><br><span class="line">	&quot;mappings&quot;: &#123;</span><br><span class="line">		&quot;dynamic&quot;: false,</span><br><span class="line">		&quot;properties&quot;: &#123;</span><br><span class="line">			&quot;productid&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;long&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;name&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;,</span><br><span class="line">				&quot;index&quot;: true,</span><br><span class="line">				&quot;analyzer&quot;: &quot;ik_max_word&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;age&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;,</span><br><span class="line">				&quot;index&quot;: true,</span><br><span class="line">				&quot;analyzer&quot;: &quot;ik_max_word&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;sex&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;,</span><br><span class="line">				&quot;index&quot;: true,</span><br><span class="line">				&quot;analyzer&quot;: &quot;ik_max_word&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;desc&quot;: &#123;</span><br><span class="line">				&quot;type&quot;: &quot;text&quot;,</span><br><span class="line">				&quot;index&quot;: true,</span><br><span class="line">				&quot;analyzer&quot;: &quot;ik_max_word&quot;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>url中的student即为索引名，新建其他索引更换即可，<strong>并且此api可以根据put、delete，get达到新增、删除和查看的效果</strong></p>
+<ol start="3">
+<li>查看全部索引<br>method：get<br>url：<a target="_blank" rel="noopener" href="http://localhost:9200/_cat/indices">http://localhost:9200/_cat&#x2F;indices</a></li>
+<li>为索引添加mapping<br>method：put<br>url：<a target="_blank" rel="noopener" href="http://localhost:9200/student">http://localhost:9200/student</a><br>body：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;properties&quot;: &#123;</span><br><span class="line">    &quot;name&quot;: &#123;</span><br><span class="line">      &quot;type&quot;: &quot;text&quot;,</span><br><span class="line">      &quot;analyzer&quot;: &quot;ik_max_word&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>url中的student即为索引名，为其他索引创建mapping更换即可，<strong>此api可以根据put、get达到新增、和查看的效果</strong></p>
+<ol start="5">
+<li>添加数据<br>method：post<br>url：<a target="_blank" rel="noopener" href="http://localhost:9200/student/_doc/1?op_type=create">http://localhost:9200/student/_doc&#x2F;1?op_type&#x3D;create</a><br>body：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;productid&quot;: 2,</span><br><span class="line">	&quot;name&quot;: &quot;张三&quot;,</span><br><span class="line">	&quot;age&quot;: &quot;12&quot;,</span><br><span class="line">	&quot;sex&quot;: &quot;女&quot;,</span><br><span class="line">	&quot;desc&quot;: &quot;喜欢打篮球、听音乐，不喜欢下棋，语文成绩好，数学成绩差&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>url中的student为索引名，_doc为默认类型，elasticsearch7已经移除索引类型（type）概念，不再支持指定索引类型，默认索引类型是_doc，1是id，也可以不写，如果请求方式为put，则必须写，op_type&#x3D;create的作用是当url中的id已存在的时候，会报错，如果不写op_type&#x3D;create，而id又已经存在，则会更新</p>
+<ol start="6">
+<li>条件查询（四种查询模式：精确词查询、匹配查询、多条件查询、复合查询、聚合查询，分别对应 “term”、”match”、”multi_match”、”bool”、”aggs”）<br>method：get<br>url：<a target="_blank" rel="noopener" href="http://localhost:9200/student/_search">http://localhost:9200/student/_search</a><ol>
+<li>匹配查询<br>body：</li>
+</ol>
+</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;query&quot;: &#123;</span><br><span class="line">		&quot;match&quot;: &#123;</span><br><span class="line">			&quot;desc&quot;: &quot;数学&quot;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<pre><code>2. 多条件查询  
+</code></pre>
+<p>body：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;query&quot;:&#123;&quot;multi_match&quot;:&#123;&quot;query&quot;:&quot;篮球&quot;,&quot;fields&quot;:[&quot;desc&quot;,&quot;name&quot;]&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>query为查询条件，fields为查询字段，多条件查询命中一条就可以查出来，类似于or</p>
+<pre><code>3. 复合查询  
+</code></pre>
+<p>body：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;query&quot;: &#123;</span><br><span class="line">		&quot;bool&quot;: &#123;</span><br><span class="line">			&quot;must&quot;: [</span><br><span class="line">				&#123;</span><br><span class="line">					&quot;match&quot;: &#123;</span><br><span class="line">						&quot;desc&quot;: &quot;篮球&quot;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			],</span><br><span class="line">			&quot;should&quot;: [</span><br><span class="line">				&#123;</span><br><span class="line">					&quot;match&quot;: &#123;</span><br><span class="line">						&quot;name&quot;: &quot;四&quot;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			]</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>bool把各种其它查询通过 must（与）、must_not（非，不计算分数）、should（或）、filter （与、但不会计算分数）的方式进行组合，像这个例子中，只会匹配desc中有篮球并且有音乐的记录，但是如果should中的条件满足一条的话，会提高_source，也可以说提高分数，如果两条都满足，分数可以提高更多。must、should满足条件都会提高分数。与must同时存在时，should的作用就是将感兴趣的信息放在前面。特别注意，json格式不能同时存在两个match，只有最后一个会生效，故相同的查询方式只能放在数组中</p>
+<pre><code>4. 聚合查询  
+</code></pre>
+<p>body:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;size&quot;: 0,</span><br><span class="line">	&quot;aggs&quot;: &#123;</span><br><span class="line">		&quot;sex_aggs&quot;: &#123;</span><br><span class="line">			&quot;terms&quot;: &#123;</span><br><span class="line">				&quot;field&quot;: &quot;productid&quot;</span><br><span class="line">			&#125;,</span><br><span class="line">			&quot;aggs&quot;: &#123;</span><br><span class="line">				&quot;sum_age&quot;: &#123;</span><br><span class="line">					&quot;sum&quot;: &#123;</span><br><span class="line">						&quot;field&quot;: &quot;age&quot;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里根据procutid分组并且对age求和</p>
+<p>桶的分组方式<br>Date Histogram Aggregation：根据日期阶梯分组，例如给定阶梯为周，会自动每周分为一组<br>Histogram Aggregation：根据数值阶梯分组，与日期类似<br>Terms Aggregation：根据词条内容分组，词条内容完全匹配的为一组<br>Range Aggregation：数值和日期的范围分组，指定开始和结束，然后按段分组</p>
+<p>度量<br>度量类似mysql的avg,max等函数，用来求分组内平均值，最大值等。</p>
+<p>比较常用的一些度量聚合方式：</p>
+<p>Avg Aggregation：求平均值<br>Max Aggregation：求最大值<br>Min Aggregation：求最小值<br>Percentiles Aggregation：求百分比<br>Stats Aggregation：同时返回avg、max、min、sum、count等<br>Sum Aggregation：求和<br>Top hits Aggregation：求前几<br>Value Count Aggregation：求总数</p>
+<h1 id="列的类型"><a href="#列的类型" class="headerlink" title="列的类型"></a>列的类型</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/PacosonSWJTU/article/details/127200021">参考文章</a></p>
+<ol>
+<li>核心数据类型： <ol>
+<li>string字符串： <ul>
+<li>text：文本类型（分词）；</li>
+<li>keyword：关键字类型（不分词）；</li>
+</ul>
+</li>
+<li>numeric-数值类型： <ul>
+<li>long, integer, short, byte, double, float, half_float, scaled_float</li>
+</ul>
+</li>
+<li>date-日期类型（存储自unix纪元以来的毫秒数）；</li>
+<li>date_nanos：日期纳秒类型（存储自unix纪元以来的纳秒数）；</li>
+<li>boolean-布尔类型；</li>
+<li>binary-二进制类型；</li>
+<li>range-范围类型: <ul>
+<li>integer_range, float_range, long_range, double_range, date_range</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>复杂数据类型 <ol>
+<li>object：对象类型；存储单个json对象；</li>
+<li>nested：嵌套类型；存储json对象数组；</li>
+</ol>
+</li>
+<li>数组类型（字段数组类型） <ul>
+<li>数组不需要专用的数据类型。一个字段默认可以包含0个或多个值。然而，数组中的所有值必须是同一种类型；</li>
+</ul>
+</li>
+<li>多字段类型： <ul>
+<li>根据不同目的以不同方式索引同一字段是有帮助的；<br>举例，字符串字段可以被映射为 text字段以便全文搜索，也可以映射为keword以便于排序或聚合。</li>
+</ul>
+</li>
+<li>其他数据类型 <ul>
+<li>如地理位置信息数据类型，ip数据类型等（没有罗列完全）</li>
+</ul>
+</li>
+</ol>
+<h1 id="ElasticSearch数据结构"><a href="#ElasticSearch数据结构" class="headerlink" title="ElasticSearch数据结构"></a>ElasticSearch数据结构</h1><p>  在了解写入流程前先来看下ES的结构是什么样子。这是网上介绍ES的一张图片，从中可以看出一个ES集群中有多个Server节点，每个Server节点中含有多个Index。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/cdbdc73623896546a0ff5fc0affdb5b9.png"></p>
+<p>  一个Index含有多个分片(shard)，其中有一个 primary 主分片，负责写入，其他副本为 replica，不能写，只能同步 primary 的数据，但可以处理读请求。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/79fb9961e2364bc3fca856ede099d0cd.png"></p>
+<p>  ES 收到写请求后，会将请求路由到index的主分片上。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/255cb9754d804f2b30ea95ae663cfc33.png"></p>
+<p>  ES的底层是Lucene引擎，ES的每一个分片对应到底层实际上就是一个 Lucene Index，包含多个 segment 文件，和一个 commit point 文件。segment 文件存储的就是一个个的 Document，commit point 相当于一个索引文件，记录了都有哪些 segment 文件。</p>
+<h1 id="ElasticSearch读取流程"><a href="#ElasticSearch读取流程" class="headerlink" title="ElasticSearch读取流程"></a>ElasticSearch读取流程</h1><h2 id="读阶段-query"><a href="#读阶段-query" class="headerlink" title="读阶段(query)"></a><font style="color:rgb(79, 79, 79);">读阶段(query)</font></h2><pre><code>   当客户端发出一个请求到服务端，收到请求的节点会成为协调节点，将请求发送到所有的分片上，分片收到请求，会在本地生成一个优先级队列，这个优先级队列的大小是from+size，故深度分页搜索不能用from+size，因为深度越大，这个优先级队列越大，性能就越低。举一个网上的列子：&lt;font style=&quot;color:rgb(77, 77, 77);&quot;&gt;假如有1万条数据记录了各种水果在全国各省市的销量，其中草莓的销量数据如下（三个颜色代表三个分片）：&lt;/font&gt;
+</code></pre>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/7dd4b450d63d20e3f85cd8afd4d868f9.png"></p>
+<p>现在如果根据销量排序分页查询，假设from&#x3D;2，size&#x3D;2，那么每个分片将前四条数据放入优先级队列并返回给协调节点（只包括id和排序的字段）。我们假设一下如果不返回前条而是返回第三条和第四条数据的话，会怎么样，我们可以看出，我们最终想要的结果是深蓝色区域销量为50000和浅蓝色销量为36000的数据，如果每个分片只返回第三条和第四条数据的话，那么浅蓝色区域销量为36000的数据就无法被查出，数据的准备性就无法得到保证。协调节点收到所有分片的数据后，合并到一个全局的有序队列</p>
+<h2 id="取阶段-fetch"><a href="#取阶段-fetch" class="headerlink" title="取阶段(fetch)"></a>取阶段(fetch)</h2><pre><code>   协调节点收到所有分片的数据后合并到一个有序队列，合并排序完后，查出自己需要的数据，然后根据id像分片查询完整文档。
+
+   一般情况，都是query then fetch，即先读后取，但也可以query and fetch，即在query的时候直接返回完整文档，而不是只返回id和排序字段，这种方式查询速度很快，因为少了fetch的第二次查询，少了一次网络传输，但是如果查询数据量特别大的话，query and fetch的方式可能并不可取，因为在query阶段返回的数据可能是好几倍
+</code></pre>
+<h1 id="ElasticSearch写入流程"><a href="#ElasticSearch写入流程" class="headerlink" title="ElasticSearch写入流程"></a>ElasticSearch写入流程</h1><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/9de9619289abe4800dfd60b9d819d22e.png"></p>
+<pre><code>   从上图可以看出客户端写入请求进入ES后，首先会写入内存Buffer中，同时写入Translog日志，内存Buffer读写速度快，但因为不能持久化，所以并不安全，容易出现数据丢失，所以同时写入Tranlog日志，Tranlog日志只是做日志追加，所以写入快，并且稳定，如果系统出现宕机，重启后可以通过Tranlog日志恢复。
+
+   ES每隔一秒就会执行一次refresh，创建一个Segment，并将Buffer内存写入Segment，ES 有一个后台程序，用于 merge 合并这些 segment 文件，把小 segment 整合到一个大的 segment 中，并修改 commit point 的 segment 记录。merge 过程还会清理被删除的数据。es 接收到删数据请求时，不会真的到 segment 中把数据删了，而是把要删除的数据写到 ‘.del’ 文件中，在读操作时，会根据这个文件进行过滤。merge 合并时才真正删除，合并后的 segment 中就没有已经删除的数据了。 进入 segment 的数据就进入了 Lucene，建立好了倒排索引，可以被搜索到，所以写入的数据最多只有一秒无法被搜索到。
+
+   当数据写入Segment时，数据并没有真正落盘，因为系统本身还有一层缓存，这是系统自带的优化方法，&lt;font style=&quot;color:rgb(77, 77, 77);&quot;&gt;ES每隔5秒会异步执行一次fsync操作，将系统缓存强制写到真实的硬盘上&lt;/font&gt;。
+
+   当Translog日志大小达到阈值或者时间超过30分钟，就会触发flush操作。
+
+         1、执行 refresh 操作。
+</code></pre>
+<p>      2、把这次提交动作之前所有没有落盘的 segment 强制fsync，确保写入物理文件。</p>
+<p>      3、创建一个提交点，记录这次提交对应的所有 segment，写入 commit point 文件。</p>
+<p>      4、清空 Translog，因为 Segment 都已经踏实落地了，之前的 Translog 就不需要了。</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/a786be5a06dd5b0d5b13a14c473cf970.png"></p>
+<h1 id="ElasticSearch设置密码"><a href="#ElasticSearch设置密码" class="headerlink" title="ElasticSearch设置密码"></a>ElasticSearch设置密码</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/web15286201346/article/details/126359547">参考文章</a></p>
+<ol>
+<li>打开bin目录下的elasticsearch-setup-passwords.bat interactive<br><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/cc3d1fbeae153051ab17abcbf4e7c31c.png"></li>
+<li>发现需要配置xpack，配置config目录下的elasticsearch.yml</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">http.cors.enabled: true</span><br><span class="line">http.cors.allow-origin: &quot;*&quot;</span><br><span class="line">http.cors.allow-headers: Authorization</span><br><span class="line">xpack.security.enabled: true</span><br><span class="line">xpack.security.transport.ssl.enabled: true</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li>重启完elasticsearch，重复第一步并输入密码（账号是默认的）<br><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/c174091b3a59e1e953b734fffca31ea8.png"> </li>
+<li>访问api时要加入账号密码，否则报错<br><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/52a8d074895402cf81a59cbfcc1edd90.png"></li>
+</ol>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1>
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/ElasticSearch%E7%AC%94%E8%AE%B0/">ElasticSearch笔记</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/Ribbon%E3%80%81LoadBalancer%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/">Ribbon、LoadBalancer负载均衡</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%9A%84API"><span class="toc-text">基本的API</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%97%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-text">列的类型</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ElasticSearch%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">ElasticSearch数据结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ElasticSearch%E8%AF%BB%E5%8F%96%E6%B5%81%E7%A8%8B"><span class="toc-text">ElasticSearch读取流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E9%98%B6%E6%AE%B5-query"><span class="toc-text">读阶段(query)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%96%E9%98%B6%E6%AE%B5-fetch"><span class="toc-text">取阶段(fetch)</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ElasticSearch%E5%86%99%E5%85%A5%E6%B5%81%E7%A8%8B"><span class="toc-text">ElasticSearch写入流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ElasticSearch%E8%AE%BE%E7%BD%AE%E5%AF%86%E7%A0%81"><span class="toc-text">ElasticSearch设置密码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-text"></span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

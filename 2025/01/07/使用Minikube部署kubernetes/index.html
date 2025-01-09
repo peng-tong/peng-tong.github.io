@@ -1,0 +1,736 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>使用Minikube部署kubernetes - 求知之旅</title>
+
+  
+    <meta name="description" content="准备需要的三个东西：minikube，docker，kubectl  minikube：minikube支持一键部署kubernetes集群，用于单机测试和日常开发，minikube安装可参考官网：https:&#x2F;&#x2F;minikube.sigs.k8s.io&#x2F;docs&#x2F;start&#x2F;，参照官网根据不同的系统到不同的地址下载对应的安装包即可，这个网站还有minikube相关知识关于使用minikube部署">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Minikube部署kubernetes">
+<meta property="og:url" content="http://example.com/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="准备需要的三个东西：minikube，docker，kubectl  minikube：minikube支持一键部署kubernetes集群，用于单机测试和日常开发，minikube安装可参考官网：https:&#x2F;&#x2F;minikube.sigs.k8s.io&#x2F;docs&#x2F;start&#x2F;，参照官网根据不同的系统到不同的地址下载对应的安装包即可，这个网站还有minikube相关知识关于使用minikube部署">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/fb5cc7557a3c102353a172ccf0f0208f.png">
+<meta property="og:image" content="http://example.com/images/241ef4a59d406973e3d5dba68f792920.png">
+<meta property="og:image" content="http://example.com/images/a26368c5277f1989945f2cd197d616b2.png">
+<meta property="og:image" content="http://example.com/images/c1e487c88776da503318f058c7ce53c3.png">
+<meta property="og:image" content="http://example.com/images/28953e146cb763ab17cd1c399aa60424.png">
+<meta property="og:image" content="http://example.com/images/6b638ffbc77bd38f40039d73131a4177.png">
+<meta property="og:image" content="http://example.com/images/a29a7def9057111a96dfcb446e9f22e2.png">
+<meta property="og:image" content="http://example.com/images/8a0e3da18a6d3f357d936c15d7e31dad.png">
+<meta property="og:image" content="http://example.com/images/dc573039413b73be75f225fb6dea8c1c.png">
+<meta property="og:image" content="http://example.com/images/bbb27bf53b9c9df7759a7e1327e543ea.png">
+<meta property="og:image" content="http://example.com/images/977cb76d76356100ef89a3dbb62868e2.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.747Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.038Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/fb5cc7557a3c102353a172ccf0f0208f.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E9%83%A8%E7%BD%B2%E8%BF%90%E7%BB%B4/">部署运维</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.747Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.038Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>使用Minikube部署kubernetes</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h1><p>需要的三个东西：minikube，docker，kubectl</p>
+<ol>
+<li>minikube：minikube支持一键部署kubernetes集群，用于单机测试和日常开发，minikube安装可参考官网：<a target="_blank" rel="noopener" href="https://minikube.sigs.k8s.io/docs/start/">https://minikube.sigs.k8s.io/docs/start/</a>，参照官网根据不同的系统到不同的地址下载对应的安装包即可，这个网站还有minikube相关知识<br>关于使用minikube部署kubernetes的使用可以参考kubernetes官网：<a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/tutorials/hello-minikube/">https://kubernetes.io/zh-cn/docs/tutorials/hello-minikube/</a></li>
+<li>docker：docker是Kubernetes支持的一种容器运行时（container runtime），用于创建和管理容器，需要手动下载，具体可以参考：<a target="_blank" rel="noopener" href="https://developer.aliyun.com/mirror/docker-ce?spm=a2c6h.13651102.0.0.57e31b11jhHwZt">阿里云docker-ce镜像</a></li>
+<li>kubectl：kubectl是kubenetes命令行工具，通过kubectl可以部署和管理应用，查看各种资源，创建，删除和更新组件，<a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/tasks/tools/">安装参考</a></li>
+</ol>
+<h1 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h1><h2 id="docker"><a href="#docker" class="headerlink" title="docker"></a>docker</h2><h3 id="启动-1"><a href="#启动-1" class="headerlink" title="启动"></a>启动</h3><p>首先，启动docker，这里启动时遇到一个问题：Error creating default “bridge” network: Failed to program NAT chain: INVALID_ZONE: docker，原因是因为版本大于等于 20.10.0的docker会自动创建了一个名为docker的 firewalld <a target="_blank" rel="noopener" href="https://so.csdn.net/so/search?q=zone&spm=1001.2101.3001.7020">zone</a>，需要将docker0虚拟网卡加入到这个zone才能正常启动，一般情况下docker0网卡应该默认就在docker zone下面</p>
+<h3 id="创建用户"><a href="#创建用户" class="headerlink" title="创建用户"></a>创建用户</h3><p>minikube不能直接在root用户下启动，所以启动minikube的用户需要加入到docker用户组才能启动、操作docker</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#创建docker用户组，一般情况下，安装docker时，会自动创建docker用户组</span></span><br><span class="line"><span class="built_in">sudo</span> groupadd docker</span><br><span class="line"><span class="comment">#普通用户加入docker用户组</span></span><br><span class="line"><span class="built_in">sudo</span> usermod  -aG docker <span class="variable">$&#123;用户名&#125;</span></span><br><span class="line"><span class="comment">#重启docker</span></span><br><span class="line"><span class="built_in">sudo</span> systemctl restart docker</span><br></pre></td></tr></table></figure>
+
+<h2 id="minikube"><a href="#minikube" class="headerlink" title="minikube"></a>minikube</h2><h3 id="启动-2"><a href="#启动-2" class="headerlink" title="启动"></a>启动</h3><p>minikube启动命令，这里启动时遇到一个问题，minikube内部所需的镜像等无法正常下载，本地环境是虚拟机，为虚拟机的ens33网卡配置dns后，下载正常</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube start --driver=<span class="string">&quot;docker&quot;</span> --registry-mirror=<span class="string">&quot;https://kn0t2bca.mirror.aliyuncs.com&quot;</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>–driver：指定容器运行时</li>
+<li>–registry-mirror：镜像地址，minikube拉取镜像时的地址，也就是minikube内部docker的镜像地址，可以进入minikube后执行docrer info确认<br>如果需要更换的话，必须先执行minikube delete删除当前minikube环境（所有deployment、pod等都没了），在执行start命令，还没有找到其他办法</li>
+</ol>
+<h3 id="进入minikube"><a href="#进入minikube" class="headerlink" title="进入minikube"></a>进入minikube</h3><p>minikube的启动实际上是创建了一个docker容器，使用docker容器作为运行kubernetes的主机</p>
+<p>进入方法包括两种，一种是通过docker exec（进入后是root用户），一种是通过minikube ssh命令（进入后是docker用户）</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/fb5cc7557a3c102353a172ccf0f0208f.png"></p>
+<p>可以到容器内部，检查相关内容，例如网络，在外网环境下，minikube必须要能够访问外网才能在首次启动时正常下载需要的镜像并且在之后的使用中正常拉取镜像。后面所有pod管理的容器实际上也是minikube容器下创建的</p>
+<h3 id="仪表板"><a href="#仪表板" class="headerlink" title="仪表板"></a><font style="color:rgb(34, 34, 34);">仪表板</font></h3><p>minikube启动后可以通过一个命令打开一个浏览器或输出一个url，可以访问kubernetes集群控制台</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minikube dashboard --url//加上--url会输出一个url，不加的话，系统会尝试打开一个浏览器自动访问</span><br></pre></td></tr></table></figure>
+
+<p>这个命令的作用是展示kubernetes的dashboard组件提供的地址，但是minikube默认只代理127.0.0.1的流量，这时候可以使用kubectl proxy命令，kubectl proxy<font style="color:rgb(31, 35, 40);">将本地流量代理到Kubernetes集群的API Server，</font>我们如果需要代理其他网卡的流量，可以单独执行kubectl proxy命令，具体路径参考minikube dashboard –url输出的路径，只是需要注意ip和端口的变化</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl proxy --port=8080 --address=<span class="string">&#x27;192.168.255.100&#x27;</span> --accept-hosts=<span class="string">&#x27;^.*&#x27;</span> &amp;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>–port&#x3D;8080：代理端口为8080</li>
+<li>–address&#x3D;’192.168.255.100’：代理的ip，配合–port参数，可以理解为将访问192.168.255.100:8080的请求转发到<font style="color:rgb(31, 35, 40);">Kubernetes集群</font></li>
+<li><font style="color:rgb(31, 35, 40);">–accept-hosts&#x3D;’^.*’ &amp;：接受哪些主机的访问请求，这里的值代表全部</font></li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/241ef4a59d406973e3d5dba68f792920.png"></p>
+<h1 id="相关内容"><a href="#相关内容" class="headerlink" title="相关内容"></a>相关内容</h1><p>这里了解Deployment、Endpoint、Pod、Service等知识</p>
+<h2 id="Deployment"><a href="#Deployment" class="headerlink" title="Deployment"></a>Deployment</h2><p><font style="color:rgb(31, 35, 40);">Kubernetes Deployment 是一种用于管理容器化应用实例的控制器，它确保在集群中按照用户定义的规格（如副本数量、镜像版本等）持续运行并能自动进行滚动更新与恢复。一般情况下，在命令当中，deployment可以被简写为deploy</font></p>
+<h3 id="相关命令"><a href="#相关命令" class="headerlink" title="相关命令"></a><font style="color:rgb(31, 35, 40);">相关命令</font></h3><p><font style="color:rgb(31, 35, 40);">创建deployment命令，除了create通过命令创建，还可以通过apply使用yaml文件创建deployment，这里使用create命令示例</font></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create deploy hello-node --image=nginx --replicas=3</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>hello-node：deployment的名称</li>
+<li>–image&#x3D;nginx：使用nginx的镜像</li>
+<li>–replicas&#x3D;3：启动三个副本（Pod），并且确保<font style="color:rgb(31, 35, 40);">Deployment应该始终保持 3 个副本（Pod）的数量在线，当有 Pod 故障时，Kubernetes 会自动创建新的 Pod 来替换故障的 Pod，以保持副本数目的稳定</font></li>
+</ol>
+<p>deployment创建完后也可以通过scale修改副本数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl scale deploy hello-node --replicas=2</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>hello-node：deployment的名称</li>
+<li>–replicas&#x3D;2：修改副本数</li>
+</ol>
+<p>deployment创建后可通过get deployment查看所有deployment</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get deploy</span><br></pre></td></tr></table></figure>
+
+<h3 id="滚动更新"><a href="#滚动更新" class="headerlink" title="滚动更新"></a>滚动更新</h3><p>滚动更新是deployment的功能之一，在使用kubectl apply -f命令时，如果deployment已存在并且内容发生了变化，则会重新创建一个ReplicaSet并滚动创建新的pod（即等新的pod启动后才会关闭旧的pod，保证任何时候都能正常访问），需要注意通过create命令，无法实现滚动更新</p>
+<h3 id="滚动恢复"><a href="#滚动恢复" class="headerlink" title="滚动恢复"></a><font style="color:rgba(0, 0, 0, 0.87);">滚动恢复</font></h3><p>在进行上面的滚动更新操作后，旧的<font style="color:rgba(0, 0, 0, 0.87);">ReplicaSet并不会再使用，它所管理的pod也会被陆续删除，但是旧的ReplicaSet本身会被保留，一个ReplicaSet可以代表一个版本，可以通过kubectl rollout history查看版本列表</font></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl rollout <span class="built_in">history</span> deployment &lt;deployment-name&gt; --revision=3 <span class="comment">#--revision：可选，代表查看具体的版本</span></span><br></pre></td></tr></table></figure>
+
+<p>可通过kubectl rollout undo命令滚动回退版本（保证任意时刻都有pod在运行）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl rollout undo deployment &lt;deployment-name&gt; --to-revision=3 <span class="comment">#--to-revision：可选，代表回退到指定版本</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Replica-Set"><a href="#Replica-Set" class="headerlink" title="Replica Set"></a><font style="color:rgba(0, 0, 0, 0.87);">Replica Set</font></h2><p><font style="color:rgb(31, 35, 40);">Replica Sets是Kubernetes中用于确保指定数量的Pod副本按照同一模板运行并保持一致性的控制器，它具备自动扩缩容和自我修复能力，确保Pod服务的高可用性和稳定性。它的名称通常就是deployment+随机字符串。在创建deployment时，Replica Sets会被自动创建。一般情况下，命令中的replicaset可以被简写为rs</font></p>
+<h3 id="相关命令-1"><a href="#相关命令-1" class="headerlink" title="相关命令"></a><font style="color:rgb(31, 35, 40);">相关命令</font></h3><p><font style="color:rgb(31, 35, 40);">可通过get replicaset获取所有replicaset</font></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get rs</span><br></pre></td></tr></table></figure>
+
+<h2 id="Pod"><a href="#Pod" class="headerlink" title="Pod"></a>Pod</h2><p><font style="color:rgb(31, 35, 40);">Pod是Kubernetes中部署和管理容器化应用的基本单位，它封装了一个或多个紧密相关的容器，这些容器共享存储卷、网络命名空间和IPC（进程间通信），共同组成一个运行环境。Pod强调了容器间的协同工作，确保这些容器一起调度、一起运行，并且具有唯一的IP地址和网络标识，以实现高效的微服务架构部署与管理。</font></p>
+<h3 id="相关命令-2"><a href="#相关命令-2" class="headerlink" title="相关命令"></a><font style="color:rgb(31, 35, 40);">相关命令</font></h3><p>可通过get pods获取所有pod</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pods</span><br></pre></td></tr></table></figure>
+
+<p>可通过describe 查看pod日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl describe pod &lt;pod-name&gt;</span><br></pre></td></tr></table></figure>
+
+<p>可通过exec命令进入pod创建的容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="built_in">exec</span> -it &lt;pod-name&gt; -- bash//pod只有一个容器的情况下</span><br><span class="line">kubectl <span class="built_in">exec</span> -it &lt;pod-name&gt; [-c &lt;container-name&gt;] -- bash//pod多个容器的情况下</span><br></pre></td></tr></table></figure>
+
+<h3 id="访问pod"><a href="#访问pod" class="headerlink" title="访问pod"></a>访问pod</h3><p>Pod可以通过集群api访问，举个例子</p>
+<p><a target="_blank" rel="noopener" href="http://192.168.255.100:8080/api/v1/namespaces/default/pods/hello-node-86c8975888-rqqms:80/proxy/">http://192.168.255.100:8080/api/v1/namespaces/default/pods/hello-node-86c8975888-rqqms:80/proxy/</a></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/a26368c5277f1989945f2cd197d616b2.png"></p>
+<p>例子中的hello-node-86c8975888-rqqms代表容器，80代表访问容器的端口，后面的&#x2F;proxy&#x2F;是必须的，综合起来<a target="_blank" rel="noopener" href="http://192.168.255.100:8080/api/v1/namespaces/default/pods/hello-node-86c8975888-rqqms:80/proxy/">hello-node-86c8975888-rqqms:80&#x2F;proxy&#x2F;</a>相当于访问容器的80端口，如果需要访问具体资源，则为<a target="_blank" rel="noopener" href="http://192.168.255.100:8080/api/v1/namespaces/default/pods/hello-node-86c8975888-rqqms:80/proxy/">hello-node-86c8975888-rqqms:80&#x2F;proxy&#x2F;</a>+资源路径</p>
+<h2 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h2><p><font style="color:rgb(31, 35, 40);">Kubernetes Service是一个抽象层，它定义了一个稳定的网络入口点，通过标签选择器将流量路由到后端的一组Pod实例上，并提供负载均衡和服务发现机制。简单来说，Service是连接和管理Pod间通信以及对外暴露服务的核心组件。service拥有很多功能，例如：服务发现、负载均衡。一般命令中的service可以被简写为svc</font></p>
+<h3 id="相关命令-3"><a href="#相关命令-3" class="headerlink" title="相关命令"></a><font style="color:rgb(31, 35, 40);">相关命令</font></h3><p><font style="color:rgb(31, 35, 40);">可通过kubectl expose deployment发布service</font></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl expose deployment hello-node --<span class="built_in">type</span>=LoadBalancer --port=80 --target-port=8080</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>deployment：这里指为指定的deployment创建service，但是不但可以为deployment创建service，还可以为<font style="color:rgb(31, 35, 40);">replicaset、pod等创建service</font></li>
+<li>hello-node：deployment的名字，如果是为<font style="color:rgb(31, 35, 40);">replicaset、pod创建service，那么就是replicaset、pod的名称</font></li>
+<li><font style="color:rgb(31, 35, 40);">–type&#x3D;LoadBalancer：type决定了服务如何路由流量到后端Pod，包括</font><ol>
+<li><font style="color:rgb(31, 35, 40);">ClusterIP (默认类型)： 创建一个仅在集群内部可以访问的服务，由集群内其他服务或Pod通过内部IP地址进行访问。</font></li>
+<li><font style="color:rgb(31, 35, 40);">NodePort：在ClusterIP的基础上，还会在每个Node上开放一个特定端口（30000-32767范围内的随机端口或者指定端口），允许外部客户端通过这个端口直接访问到服务。这意味着集群外部可以通过任何节点的该端口访问服务。这里的Node在minikube环境下可以理解为minikube容器，普通情况下就是运行kubernetes的节点</font></li>
+<li><font style="color:rgb(31, 35, 40);">LoadBalancer： 适用于云环境，在NodePort的基础上，会在云提供商层面创建一个负载均衡器，将外部流量转发到Service。负载均衡器会分配一个公网IP地址，使得外部网络可以直接访问到服务。如果条件允许，可通过外网ip访问</font></li>
+<li><font style="color:rgb(31, 35, 40);">ExternalName： 将Service映射到DNS名称，不创建集群内部的Endpoints。当集群需要引用集群外的服务时，这种类型非常有用</font></li>
+<li><font style="color:rgb(31, 35, 40);">Headless Service（无头服务）： 不为Service分配Cluster IP，而是创建没有代理的Endpoints资源对象，通常与StatefulSet配合使用，直接通过Pod的DNS名称进行通信</font></li>
+</ol>
+</li>
+<li>–port：service监听端口</li>
+<li>–target-port&#x3D;8080：目标端口，结合配置–port可以理解为发起到service的80端口的请求会被转发到pod内部的8080端口</li>
+</ol>
+<p>通过kubectl get services命令查看service</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get services</span><br></pre></td></tr></table></figure>
+
+<h3 id="访问service"><a href="#访问service" class="headerlink" title="访问service"></a>访问service</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/c1e487c88776da503318f058c7ce53c3.png"></p>
+<p>在上图的hello-node服务中，type&#x3D;<font style="color:rgb(31, 35, 40);">LoadBalancer代表使用LoadBalancer模式路由，cluster-ip&#x3D;10.100.105.87是为Service创建的集群IP</font></p>
+<h4 id="通过集群api访问"><a href="#通过集群api访问" class="headerlink" title="通过集群api访问"></a>通过集群api访问</h4><p>service和pod一样，也可以通过集群api访问，举个例子</p>
+<p><a target="_blank" rel="noopener" href="http://192.168.255.100:8080/api/v1/namespaces/default/services/hello-node:/proxy/">http://192.168.255.100:8080/api/v1/namespaces/default/services/hello-node:80/proxy/</a></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/28953e146cb763ab17cd1c399aa60424.png"></p>
+<p>格式和pod类似，其中services对应上面例子的pods，代表类型，hello-node是service的名字，80是访问service的端口，即创建service是配置的–port</p>
+<h4 id="通过service生成的集群ip访问"><a href="#通过service生成的集群ip访问" class="headerlink" title="通过service生成的集群ip访问"></a>通过service生成的集群ip访问</h4><p>上面的提到<font style="color:rgb(31, 35, 40);">ClusterIP、NodePort、LoadBalancer模式下，都会为Service生成一个集群ip，这个ip只能在pod内部访问，并且在pod内部还可以通过Service的名称访问，名称对应的ip地址就是Servicd的集群ip地址</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/6b638ffbc77bd38f40039d73131a4177.png"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/a29a7def9057111a96dfcb446e9f22e2.png"></p>
+<h4 id="通过静态端口访问"><a href="#通过静态端口访问" class="headerlink" title="通过静态端口访问"></a>通过静态端口访问</h4><p>上面提到的<font style="color:rgb(31, 35, 40);">NodePort、LoadBalancer模式下，会为Node创建一个静态端口，可以在集群外通过这个静态端口访问Service，在minikube环境下，minikube容器就是一个Node，所以可以通过minikube的ip加上静态端口访问Service，下图的是minikube容器的ip，即kubernetes Node的ip</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/8a0e3da18a6d3f357d936c15d7e31dad.png"></p>
+<h3 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h3><p>kubernetes的服务发现功能就是通过service实现的，kubernetes会根据servcie的名称建立一个DNS记录，而kubelet 在启动 Pod 时也会配置 Pod 中的 resolv.conf 文件，指向集群中的 DNS 服务器，所以在pod内部可以通过http:&#x2F;&#x2F;&lt;service的名称&gt;:<port>的方式访问service</p>
+<h3 id="负载均衡"><a href="#负载均衡" class="headerlink" title="负载均衡"></a>负载均衡</h3><p>service默认提供了基本的四层（TCP&#x2F;UDP）负载均衡能力，该能力主要通过 kube-proxy 组件实现，并且基于 IP 地址和端口进行分发流量，使用一定的策略将请求分发到后端 Pod。这里提到的四层（TCP&#x2F;UDP）负载均衡能力，可以理解为nginx的stream模块，而nginx的http模块，可以对具体http路径进行代理负载，实现七层(HTTP&#x2F;HTTPS)负载均衡，service在不借助其他工具的情况下无法实现类似nginx的http模块的功能</p>
+<h2 id="Endpoint"><a href="#Endpoint" class="headerlink" title="Endpoint"></a>Endpoint</h2><p>Endpoint（端点）是 Service 与 Pod 实例之间的逻辑连接。一个 Endpoint 对象代表了 Pod 的 IP 地址和端口号的集合，这些 Pod 为同一个 Service 提供服务，Service 通过 Cluster IP 和端口提供统一的服务入口，而实际的请求会被路由到这些已经记录在 Endpoints 中的 Pod 实例上。这样就实现了对后端应用实例的负载均衡和服务发现。Endpoint会根据pod的状态自动更新，确保Service始终指向可用的pod实例。在<font style="color:rgb(31, 35, 40);">Kubernetes v1.17及之后的版本，</font>引入了EndpointSlices用于代替Endpoint。一般命<font style="color:rgb(31, 35, 40);">令中的endpoints可以被简写为ep</font></p>
+<h3 id="相关命令-4"><a href="#相关命令-4" class="headerlink" title="相关命令"></a>相关命令</h3><p>可通过get endpoints获取端点</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get endpoints</span><br></pre></td></tr></table></figure>
+
+<h2 id="探针"><a href="#探针" class="headerlink" title="探针"></a>探针</h2><p>探针在Kubernetes中的作用是对Pod进行健康检查，一个额外的知识，容器在创建时镜像执行的第一个命令或者应用程序会作为容器内的主进程（也称为PID 1）。这个主进程的生命周期直接决定了容器的生命周期，也就是说如果一个运行nginx的docker，当nginx的进程死掉之后，docker容器也就停止了，这时候pod会直接重启，即pod会删除原容器并通过镜像重新运行一个容器</p>
+<p>Kubernetes包含三种探针，<font style="color:rgb(0, 0, 0);">三种探针检查时机以及检测失败后的动作有所不同</font></p>
+<ol>
+<li><strong><font style="color:rgb(31, 35, 40);">存活探针（Liveness Probe）</font></strong><font style="color:rgb(31, 35, 40);">： 目的是确定容器内的主应用程序是否还在正常运行。如果存活探针检测失败，Kubernetes会认为容器内的主进程已死锁或不可用，进而根据Pod的重启策略重启容器。</font></li>
+<li><strong><font style="color:rgb(31, 35, 40);">就绪探针（Readiness Probe）</font></strong><font style="color:rgb(31, 35, 40);">： 用于决定容器是否准备好开始接收请求。如果就绪探针检测失败，Kubernetes会从服务负载均衡列表中移除该容器，直到就绪探针再次成功，这意味着容器所在Pod在此期间不会接受新的流量。这里并不会重启pod。</font></li>
+<li><strong><font style="color:rgb(31, 35, 40);">启动探针（Startup Probe）</font></strong><font style="color:rgb(31, 35, 40);">： 判断容器内的应用是否已经正确启动。如果提供了启动探针，Kubernetes会在应用完全启动之前忽略其他的存活探针和就绪探针。只有当启动探针成功后，才会开始执行其他探针。如果启动探针失败，Kubernetes会杀死容器并依据重启策略进行重启。</font></li>
+</ol>
+<p><font style="color:rgb(31, 35, 40);">这三种探针都可以通过以下方式执行检测：</font></p>
+<ul>
+<li><font style="color:rgb(31, 35, 40);">exec: 执行容器内部的特定命令，根据命令的退出状态码判断探针的成功与否。</font></li>
+<li><font style="color:rgb(31, 35, 40);">tcpSocket</font><font style="color:rgb(31, 35, 40);">: 尝试通过TCP连接到容器的指定端口，如果连接成功则认为探针成功。</font></li>
+<li><font style="color:rgb(31, 35, 40);">httpGet: 发起HTTP GET请求到容器的服务端点，根据响应的状态码判断探针的成功与否。</font></li>
+</ul>
+<p><font style="color:rgb(31, 35, 40);">下面是Liveness Probe的TcpSocket检测方式的示例，其余两个探针只需要示例中的改livenessProbe成readinessProbe或者startupProbe即可，如需更改检测方式，只需将配置中tcpSocket改为exec或者httpGet即可</font></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span> <span class="comment">#用来指定资源对象使用的API版本</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span>    <span class="comment">#指定资源对象</span></span><br><span class="line"><span class="attr">metadata:</span>           <span class="comment">#创建的资源对象属性</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">demo</span>        <span class="comment">#创建的资源对象名称</span></span><br><span class="line"><span class="attr">spec:</span>               <span class="comment">#定义Deployment对象的具体配置和期望状态</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">1</span>       <span class="comment">#pod（副本）数量</span></span><br><span class="line">  <span class="attr">selector:</span>         <span class="comment">#选择器配置，这里选择器的作用是匹配到的pod归于这个deployment管理</span></span><br><span class="line">    <span class="attr">matchLabels:</span>    <span class="comment">#通过labels选择匹配</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">demo</span>     <span class="comment">#匹配labels属性包含app: demo的pod</span></span><br><span class="line">  <span class="attr">template:</span>         <span class="comment">#模板，即pod相关配置</span></span><br><span class="line">    <span class="attr">metadata:</span>       <span class="comment">#定义pod属性</span></span><br><span class="line">      <span class="attr">labels:</span>       <span class="comment">#定义pod的lables属性</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">demo</span>   <span class="comment">#定义pod的labels属性为app: demo，这里配置需与上面的一样，这样才能将创建的pod归于deployment管理</span></span><br><span class="line">    <span class="attr">spec:</span>           <span class="comment">#定义pod对象的具体配置和期望状态</span></span><br><span class="line">      <span class="attr">containers:</span>   <span class="comment">#pod下容器相关配置</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">my-container</span>             <span class="comment">#容器名称</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">demo</span>                    <span class="comment">#容器使用的镜像</span></span><br><span class="line">        <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span>  <span class="comment">#镜像拉取策略，IfNotPresent指只要本地有这个镜像，则不拉取，不考虑版本，而Always配置会考虑版本，如果本地镜像的版本是latest，则会拉取，Never配置只从本地获取，不会拉取，如果本地没有，则报错</span></span><br><span class="line">        <span class="attr">livenessProbe:</span>                 <span class="comment">#livenessProbe探针相干配置</span></span><br><span class="line">          <span class="attr">tcpSocket:</span>                   <span class="comment">#livenessProbe配置通过tcpSocket对容器进行检测</span></span><br><span class="line">            <span class="attr">port:</span> <span class="number">8081</span>                 <span class="comment">#配置tcpSocket检测的端口</span></span><br><span class="line">          <span class="attr">initialDelaySeconds:</span> <span class="number">1</span>       <span class="comment">#容器启动后多久开始进行检测</span></span><br><span class="line">          <span class="attr">periodSeconds:</span> <span class="number">5</span>             <span class="comment">#检测频率，隔多久检测一次</span></span><br><span class="line">          <span class="attr">timeoutSeconds:</span> <span class="number">1</span>            <span class="comment">#探针执行检测请求后，等待响应的超时时间</span></span><br><span class="line">          <span class="attr">successThreshold:</span> <span class="number">1</span>          <span class="comment">#探针检测失败后认为成功的最小连接成功次数，默认为1s，在liveness探针中必须为1s，最小为1s</span></span><br><span class="line">          <span class="attr">failureThreshold:</span> <span class="number">1</span>          <span class="comment">#探测失败的重试次数，重试一定次数后将认为失败</span></span><br></pre></td></tr></table></figure>
+
+<p>关于具体的容器，我们使用Java编写一个程序用于检测是否有进行tcp检测</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestController</span> <span class="keyword">implements</span> <span class="title class_">InitializingBean</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> ServerSocket serverSocket;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/closeSocket&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">closeSocket</span><span class="params">()</span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            serverSocket.close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;false&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;true&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">afterPropertiesSet</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            serverSocket = <span class="keyword">new</span> <span class="title class_">ServerSocket</span>(<span class="number">8081</span>);</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">Thread</span>(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">                    Socket accept;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        accept = serverSocket.accept();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(e);</span><br><span class="line">                    &#125;</span><br><span class="line">                    System.out.println(DateTime.now() + <span class="string">&quot;:&quot;</span> + accept.getRemoteSocketAddress());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;).start();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段代码打开一个端口为8081的ServerSocket，用于kubernetes做检测，并且提供一个方法用于关闭此ServerSocket，用于测试kubernetes是否会重启pod</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/dc573039413b73be75f225fb6dea8c1c.png"></p>
+<p>可以看到每隔5秒，程序就会建立一个tcp连接，证明kubernetes探针已经生效了</p>
+<p>我们调用closeSocket接口关闭serverSocket，看一下是否会pod是否会重启</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/bbb27bf53b9c9df7759a7e1327e543ea.png"></p>
+<p>查看pod的事件，发现探针检测到了端口关闭，并且pod进行了重启</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/977cb76d76356100ef89a3dbb62868e2.png"></p>
+<p>查看容器日志，发现重新运行了</p>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/">使用Kubeadm部署kubernetes</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/Nacos%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C%E6%B5%81%E7%A8%8B/">Nacos服务注册流程</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%87%86%E5%A4%87"><span class="toc-text">准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8"><span class="toc-text">启动</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#docker"><span class="toc-text">docker</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8-1"><span class="toc-text">启动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E7%94%A8%E6%88%B7"><span class="toc-text">创建用户</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#minikube"><span class="toc-text">minikube</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8-2"><span class="toc-text">启动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5minikube"><span class="toc-text">进入minikube</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%AA%E8%A1%A8%E6%9D%BF"><span class="toc-text">仪表板</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%86%85%E5%AE%B9"><span class="toc-text">相关内容</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Deployment"><span class="toc-text">Deployment</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="toc-text">相关命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BB%9A%E5%8A%A8%E6%9B%B4%E6%96%B0"><span class="toc-text">滚动更新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BB%9A%E5%8A%A8%E6%81%A2%E5%A4%8D"><span class="toc-text">滚动恢复</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Replica-Set"><span class="toc-text">Replica Set</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4-1"><span class="toc-text">相关命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Pod"><span class="toc-text">Pod</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4-2"><span class="toc-text">相关命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BF%E9%97%AEpod"><span class="toc-text">访问pod</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Service"><span class="toc-text">Service</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4-3"><span class="toc-text">相关命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BF%E9%97%AEservice"><span class="toc-text">访问service</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E9%9B%86%E7%BE%A4api%E8%AE%BF%E9%97%AE"><span class="toc-text">通过集群api访问</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87service%E7%94%9F%E6%88%90%E7%9A%84%E9%9B%86%E7%BE%A4ip%E8%AE%BF%E9%97%AE"><span class="toc-text">通过service生成的集群ip访问</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E9%9D%99%E6%80%81%E7%AB%AF%E5%8F%A3%E8%AE%BF%E9%97%AE"><span class="toc-text">通过静态端口访问</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0"><span class="toc-text">服务发现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1"><span class="toc-text">负载均衡</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Endpoint"><span class="toc-text">Endpoint</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4-4"><span class="toc-text">相关命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A2%E9%92%88"><span class="toc-text">探针</span></a></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

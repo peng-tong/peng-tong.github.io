@@ -1,0 +1,670 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>Java Synchronized锁升级 - 求知之旅</title>
+
+  
+    <meta name="description" content="锁升级流程图 Mark-Word进入锁升级的学习前，必须明确一个概念，所谓的锁，所著的一定是一个对象，实例也好，类也好。先了解Java对象头中的mark-word  为什么无锁&#x2F;偏向锁的标志位是01，而轻量级锁的标志位是00？ 即按理说，无锁是锁状态的初始情况，为什么标志位不是从00开始？ 个人查询到的一个解释，是因为 轻量级锁除了锁标志位外，另外62位都是一个指针地址。 如果将轻量级锁">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java Synchronized锁升级">
+<meta property="og:url" content="http://example.com/2025/01/07/Java%20Synchronized%E9%94%81%E5%8D%87%E7%BA%A7/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="锁升级流程图 Mark-Word进入锁升级的学习前，必须明确一个概念，所谓的锁，所著的一定是一个对象，实例也好，类也好。先了解Java对象头中的mark-word  为什么无锁&#x2F;偏向锁的标志位是01，而轻量级锁的标志位是00？ 即按理说，无锁是锁状态的初始情况，为什么标志位不是从00开始？ 个人查询到的一个解释，是因为 轻量级锁除了锁标志位外，另外62位都是一个指针地址。 如果将轻量级锁">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/0a23a53a6c9df3676df40b05eca9b754.jpeg">
+<meta property="og:image" content="http://example.com/images/57c792213fd7e9b5ff6df79052224df0.png">
+<meta property="og:image" content="http://example.com/images/e27c79e923036f836dfac96799b4b836.png">
+<meta property="og:image" content="http://example.com/images/7d48bd80e8ddf08ab9f510835d5fa4a4.webp">
+<meta property="og:image" content="http://example.com/images/1fdd01bbea90703790166ba8f2b0c4d5.webp">
+<meta property="og:image" content="http://example.com/images/03cf16ee86e52755bc2e819d98c06e69.webp">
+<meta property="og:image" content="http://example.com/images/39a7502a93d00974e9b92cd9241f7656.png">
+<meta property="og:image" content="http://example.com/images/1e47bab324cc2a4b7fa3e6ad886215c3.png">
+<meta property="og:image" content="http://example.com/images/6cd6559a013cf4c1be5634bf21ab6cfc.png">
+<meta property="og:image" content="http://example.com/images/b30b5353cd365e714356a321ee6dddd9.webp">
+<meta property="og:image" content="http://example.com/images/19bf0ea727169ebcc409ea173efe6d72.png">
+<meta property="og:image" content="http://example.com/images/97202ad8adc807dc9b52756085a999b6.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.894Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:57.987Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/0a23a53a6c9df3676df40b05eca9b754.jpeg">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Java%E5%9F%BA%E7%A1%80/">Java基础</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.894Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:57.987Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Java Synchronized锁升级</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="锁升级流程图"><a href="#锁升级流程图" class="headerlink" title="锁升级流程图"></a>锁升级流程图</h1><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/0a23a53a6c9df3676df40b05eca9b754.jpeg"></p>
+<h1 id="Mark-Word"><a href="#Mark-Word" class="headerlink" title="Mark-Word"></a><font style="color:rgb(18, 18, 18);">Mark-Word</font></h1><p>进入锁升级的学习前，<strong>必须明确一个概念，所谓的锁，所著的一定是一个对象，实例也好，类也好</strong>。先了解Java对象头中的mark-word</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/57c792213fd7e9b5ff6df79052224df0.png"></p>
+<p><strong><font style="color:rgb(18, 18, 18);">为什么无锁&#x2F;偏向锁的标志位是01，而轻量级锁的标志位是00？</font></strong></p>
+<p><font style="color:rgb(18, 18, 18);">即按理说，无锁是锁状态的初始情况，为什么标志位不是从00开始？</font></p>
+<p><font style="color:rgb(18, 18, 18);">个人查询到的一个解释，是因为 轻量级锁除了锁标志位外，另外62位都是一个指针地址。</font></p>
+<p><font style="color:rgb(18, 18, 18);">如果将轻量级锁标志位设置为00， 那么在判断标志位为00后， m无需再额外做一次markWord&gt;&gt;2的操作，而是直接将markWord拿来当作地址使用即可！</font></p>
+<p><strong><font style="color:rgb(18, 18, 18);">哈希code去哪了</font></strong></p>
+<p><font style="color:rgb(18, 18, 18);">我们注意到无锁时的hashcode不见了。</font></p>
+<p><font style="color:rgb(18, 18, 18);">对于偏向锁而言， 一旦在对象头中设置过hashcode， 那么进入同步块时就不会进入偏向锁状态，会直接跳到轻量级锁，毕竟偏向锁里没有存放hashcode的地方（下文的轻量级锁和重量级锁则有存储的地方）</font></p>
+<p><font style="color:rgb(18, 18, 18);">因此凡是做过类似hashmap.put(k,v)操作且没覆写hashcode的k对象， 以后加锁时，都会直接略过偏向锁。</font></p>
+<h1 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a><font style="color:rgb(18, 18, 18);">偏向锁</font></h1><h2 id="偏向锁的意义"><a href="#偏向锁的意义" class="headerlink" title="偏向锁的意义"></a>偏向锁的意义</h2><p>假设一个场景，一个同步代码块只有一个线程使用，如果使用多次的话，需要重复获取锁和释放锁的操作，这对性能很有影响，而偏向锁在退出同步代码块时，不会释放锁，而是继续占用，下次进入同步代码块时，只需检查锁中的线程id是否是自己的线程id</p>
+<h2 id="无锁升级为偏向锁"><a href="#无锁升级为偏向锁" class="headerlink" title="无锁升级为偏向锁"></a>无锁升级为偏向锁</h2><p>首次进入同步代码块时，会通过cas的方式设置锁中的线程id（采用cas是因为存在同时写的可能的），进入偏向锁，即无锁转为偏向锁（个人认为用升级两个字其实不太妥当，因为无锁根本不涉及到同步代码块）</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/e27c79e923036f836dfac96799b4b836.png"></p>
+<h2 id="偏向锁的竞争"><a href="#偏向锁的竞争" class="headerlink" title="偏向锁的竞争"></a>偏向锁的竞争</h2><p>当一个线程已经持有偏向锁，而另一个线程也想进入该同步代码块时，就会出现竞争，</p>
+<ol>
+<li>第二个线程先等程序进入jvm全局安全点（即当前无字节码执行）</li>
+<li>判断偏向锁占有线程是否还在执行</li>
+<li>如没有执行则退为无锁，第二个线程通过cas尝试获取偏向锁，若还在执行，则进入轻量级锁的升级过程</li>
+</ol>
+<h2 id="偏向锁启用延迟"><a href="#偏向锁启用延迟" class="headerlink" title="偏向锁启用延迟"></a><font style="color:rgb(18, 18, 18);">偏向锁启用延迟</font></h2><p><strong><font style="color:rgb(18, 18, 18);">       即使你开启了偏向锁，但是这个偏向锁的启用是有延迟，大概 4s左右。即java进程启动的4s内，都会直接跳过偏向锁，有同步代码块时直接使用轻量级锁。</font></strong></p>
+<p><font style="color:rgb(18, 18, 18);">       原因是 JVM 初始化的代码有很多地方用到了synchronized，如果直接开启偏向，产生竞争就要有锁升级，会带来额外的性能损耗，jvm团队经过测试和评估， 选择了启动速度最快的方案， 即强制4s内禁用偏向锁，所以就有了这个延迟策略 （当然这个延迟时间也可以通过参数自己调整）</font></p>
+<h2 id="偏向锁的演变历史"><a href="#偏向锁的演变历史" class="headerlink" title="偏向锁的演变历史"></a><font style="color:rgb(18, 18, 18);">偏向锁的演变历史</font></h2><p><font style="color:rgb(18, 18, 18);">       偏向锁在JDK6引入, 且默认开启偏向锁优化, 可通过JVM参数-XX:-UseBiasedLocking来禁用偏向锁。但随着时代发展，发现偏向锁带来的维护、撤销成本， 远大于轻量级锁的少许CAS动作。官方说明中有这么一段话: since the introduction of biased locking into HotSpot also change the amount of uncontended operations needed for that relation to remain true。</font></p>
+<p><strong><font style="color:rgb(18, 18, 18);">       即随着硬件发展，原子指令成本变化，导致轻量级自旋锁需要的原子指令次数变少，所以自旋锁成本下降，故偏向锁的带来的优势就更小了</font></strong><font style="color:rgb(18, 18, 18);">。于是jdk团队在Jdk15之后， 再次默认关闭了偏向锁。</font></p>
+<h1 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a><font style="color:rgb(18, 18, 18);">轻量级锁</font></h1><h2 id="轻量级锁的意义"><a href="#轻量级锁的意义" class="headerlink" title="轻量级锁的意义"></a>轻量级锁的意义</h2><p>我们需要先明白一下阻塞线程是一个很消耗性能的操作，我们假设现在多个线程不断的轮着执行同步代码块，会不断的发生获取和释放锁的操作，就会不断地阻塞和唤醒线程，非常消耗性能，<strong>而轻量级锁则不阻塞线程，而是通过自旋尝试获取锁来达到类似阻塞的效果</strong>（<strong>这里需要强调一点，自旋是需要消耗cpu的，如果自旋过久的话，性能消耗反而会超过阻塞线程的性能消耗</strong>）</p>
+<h3 id="阻塞线程为什么消耗性能"><a href="#阻塞线程为什么消耗性能" class="headerlink" title="阻塞线程为什么消耗性能"></a>阻塞线程为什么消耗性能</h3><p>因为阻塞线程需要操作系统的介入，导致从用户态切换到内核态，这是一个很消耗性能的过程</p>
+<h2 id="偏向锁升级为轻量级锁"><a href="#偏向锁升级为轻量级锁" class="headerlink" title="偏向锁升级为轻量级锁"></a>偏向锁升级为轻量级锁</h2><p><em>如果对象进行过获取hashcode的操作，则直接无锁进入轻量级锁</em></p>
+<p>在上文提到了偏向锁升级为轻量级锁的时机，那升级过程究竟是怎样的呢，我们注意到，当进入轻量级锁时，mark-word的一些属性不存在了，其实这些属性被<font style="color:rgb(18, 18, 18);">存储到对应线程栈帧中的</font><strong><font style="color:rgb(18, 18, 18);">lockRecord（即轻量级锁）中了</font></strong></p>
+<ol>
+<li><font style="color:rgb(18, 18, 18);">当其他线程将锁升级为轻量级锁后，当前持有锁的线程会升级为轻量级锁，复制对象头中的mark-word到lockRecord中，然后将mark-word中的内容替换为指向当前lockRecord的指针</font></li>
+<li><font style="color:rgb(18, 18, 18);">其他线程通过轻量级锁的机制竞争锁，即自旋的方式，如果自旋的次数超过阈值，则升级为重量级锁</font></li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/7d48bd80e8ddf08ab9f510835d5fa4a4.webp"></p>
+<h2 id="轻量级锁的重入机制"><a href="#轻量级锁的重入机制" class="headerlink" title="轻量级锁的重入机制"></a>轻量级锁的重入机制</h2><p><em>首先提一下为什么偏向锁没有重入机制，因为偏向锁的本质是一个线程持有锁，所以无论重入多少次，也只有一个线程访问，也没有重入机制的必要了</em></p>
+<p>线程的lockRecord不是一个单一的lockRecord，而是lockRecord集合，每次重入会添加一个存储null的lockRecord，所以除了第一个（其实应该叫最后一个，因为是最后访问到的）lockRecord存储的是对象的mark-word，其他的lockRecord存储的都是null，每一次退出重入时，删除一个lockRecord（这里是后进先出），计数减一</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/1fdd01bbea90703790166ba8f2b0c4d5.webp"></p>
+<h2 id="轻量级锁的加锁过程"><a href="#轻量级锁的加锁过程" class="headerlink" title="轻量级锁的加锁过程"></a>轻量级锁的加锁过程</h2><ol>
+<li>每次线程进入同步代码块前，判断mark-word的指针是否指向自己，如果是，则直接走重入机制，添加一个lockRecord</li>
+<li>如果指针不是指向自己，则通过cas替换对象mark-word中的指针使指针只想自己，如果cas的次数超过阈值（默认10次），则升级为重量级锁</li>
+<li>如果mark-word还没有指向线程，说明还没被占有，复制mark-word到lockRecord，尝试通过cas将mark-record替换为指向lockRecord的指针</li>
+<li>如果cas失败，则继续自旋，超出阈值，升级为重量级锁</li>
+</ol>
+<h2 id="轻量级锁的解锁过程"><a href="#轻量级锁的解锁过程" class="headerlink" title="轻量级锁的解锁过程"></a>轻量级锁的解锁过程</h2><ol>
+<li>退出同步代码块时，获取当前lockRecord的值，如果是null，表示是退出重入，则走退出重入机制</li>
+<li>如果不为null，证明是退出锁，通过cas将mark-word复制到对象的mark-word中</li>
+<li>如果cas成功，解锁成功</li>
+<li>如果cas失败，证明已经被其他线程膨胀到重量级锁，走重量级锁解锁机制</li>
+</ol>
+<h1 id="重量级锁"><a href="#重量级锁" class="headerlink" title="重量级锁"></a>重量级锁</h1><h2 id="objectMonitor"><a href="#objectMonitor" class="headerlink" title="objectMonitor"></a>objectMonitor</h2><p><font style="color:rgb(18, 18, 18);">每个对象的重量级锁指向一个独有的objectMonitor，这个对象是C++实现的，其内部维护了以下对象</font></p>
+<ol>
+<li>_owner：初始值为null。当有线程获取到该对象锁（即获取到该对象的Monitor对象）时，owner变量便将值置为该线程的ID；当线程释放对象锁时，owner恢复为null。owner是一个临界资源，JVM是通过CAS操作来保证其线程安全；</li>
+<li>cxq：竞争队列，所有请求对象锁的线程都会首先被放置于这个队列当中（单向）。__cxq 是一个临界资源，JVM通过CAS原子指令来修改cxq队列。新入节点采用头插法，置于队列头部，__cxq指针会指向该新入队的节点。</li>
+<li>_EntryList：__cxq队列中有资格成为候选资源的线程会被移动到该队列；该队列主要存放获取锁或者重新获取锁时被阻塞的线程（也存放竞争锁失败的线程）；</li>
+<li>_WaitSet：调用wait()阻塞的线程会被移动至该等待队列中，等待线程组成双向循环链表，WaitSet所指向的是第一个节点；</li>
+<li>_recursions：synchronized是一个可重入锁，该变量用于记录锁重入（获取）的次数；</li>
+</ol>
+<h2 id="轻量级锁升级为重量级锁"><a href="#轻量级锁升级为重量级锁" class="headerlink" title="轻量级锁升级为重量级锁"></a>轻量级锁升级为重量级锁</h2><h3 id="升级为重量级锁的条件"><a href="#升级为重量级锁的条件" class="headerlink" title="升级为重量级锁的条件"></a><font style="color:rgb(18, 18, 18);">升级为重量级锁的条件</font></h3><ol>
+<li>轻量级锁状态下，自旋超出阈值（默认10次）</li>
+<li><font style="color:rgb(18, 18, 18);">从无锁&#x2F;偏向锁直接升级为重量级锁的条件：</font><strong><font style="color:rgb(18, 18, 18);">调用了object.wait()方法，则会直接升级为重量级锁！</font></strong></li>
+</ol>
+<h3 id="升级过程"><a href="#升级过程" class="headerlink" title="升级过程"></a>升级过程</h3><p>当触发轻量级锁升级为重量级锁时，<font style="color:rgb(18, 18, 18);">将对象头中的mark-word复制到objectMonitor的对象头中，并将owner属性设置为当前持有锁的线程的id，其他线程便进入阻塞队列中进行阻塞等待，并进入BLOCKED状态；</font></p>
+<h2 id="重量级锁加解锁过程"><a href="#重量级锁加解锁过程" class="headerlink" title="重量级锁加解锁过程"></a><font style="color:rgb(18, 18, 18);">重量级锁加解锁过程</font></h2><p><font style="color:rgb(18, 18, 18);">1、当线程第一次调用monitorEntry执行且是重量级锁的情况下，会先进入cxq队列</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/03cf16ee86e52755bc2e819d98c06e69.webp"></p>
+<p><font style="color:rgb(18, 18, 18);">2、当涉及锁的频繁竞争且需要阻塞时，需要进入entryList队列中。</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/39a7502a93d00974e9b92cd9241f7656.png"></p>
+<p><font style="color:rgb(18, 18, 18);">3、如果线程能CAS竞争到onwer指针，就说明占有同步代码块成功， 如果CAS竞争不到，则block阻塞。</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/1e47bab324cc2a4b7fa3e6ad886215c3.png"></p>
+<p><font style="color:rgb(18, 18, 18);">4、monitorExit退出时，会让entryList中block阻塞的线程唤醒重新竞争</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/6cd6559a013cf4c1be5634bf21ab6cfc.png"></p>
+<p><font style="color:rgb(18, 18, 18);">5、如果调用了object.wait()方法， onwer线程会进入等待队列（注意，因为竞争失败的线程，不会进入waitSet，waitSet只服务于那些wait()方法引发的线程）</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/b30b5353cd365e714356a321ee6dddd9.webp"></p>
+<p><font style="color:rgb(18, 18, 18);">6、当调用的object.notify()或者notifyAll， 等待队列中的线程会根据qmod模式的不同，进入cxq或者进入entryList。</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/19bf0ea727169ebcc409ea173efe6d72.png"></p>
+<p><font style="color:rgb(18, 18, 18);">简要版流程如下：</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/97202ad8adc807dc9b52756085a999b6.png"></p>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/Mysql%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6/">Mysql主从复制</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%94%81%E5%8D%87%E7%BA%A7%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">锁升级流程图</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Mark-Word"><span class="toc-text">Mark-Word</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81"><span class="toc-text">偏向锁</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-text">偏向锁的意义</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E9%94%81%E5%8D%87%E7%BA%A7%E4%B8%BA%E5%81%8F%E5%90%91%E9%94%81"><span class="toc-text">无锁升级为偏向锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81%E7%9A%84%E7%AB%9E%E4%BA%89"><span class="toc-text">偏向锁的竞争</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81%E5%90%AF%E7%94%A8%E5%BB%B6%E8%BF%9F"><span class="toc-text">偏向锁启用延迟</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81%E7%9A%84%E6%BC%94%E5%8F%98%E5%8E%86%E5%8F%B2"><span class="toc-text">偏向锁的演变历史</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81"><span class="toc-text">轻量级锁</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-text">轻量级锁的意义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%BB%E5%A1%9E%E7%BA%BF%E7%A8%8B%E4%B8%BA%E4%BB%80%E4%B9%88%E6%B6%88%E8%80%97%E6%80%A7%E8%83%BD"><span class="toc-text">阻塞线程为什么消耗性能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%8F%E5%90%91%E9%94%81%E5%8D%87%E7%BA%A7%E4%B8%BA%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81"><span class="toc-text">偏向锁升级为轻量级锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E7%9A%84%E9%87%8D%E5%85%A5%E6%9C%BA%E5%88%B6"><span class="toc-text">轻量级锁的重入机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E7%9A%84%E5%8A%A0%E9%94%81%E8%BF%87%E7%A8%8B"><span class="toc-text">轻量级锁的加锁过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E7%9A%84%E8%A7%A3%E9%94%81%E8%BF%87%E7%A8%8B"><span class="toc-text">轻量级锁的解锁过程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81"><span class="toc-text">重量级锁</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#objectMonitor"><span class="toc-text">objectMonitor</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E7%BA%A7%E9%94%81%E5%8D%87%E7%BA%A7%E4%B8%BA%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81"><span class="toc-text">轻量级锁升级为重量级锁</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%87%E7%BA%A7%E4%B8%BA%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81%E7%9A%84%E6%9D%A1%E4%BB%B6"><span class="toc-text">升级为重量级锁的条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%87%E7%BA%A7%E8%BF%87%E7%A8%8B"><span class="toc-text">升级过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E9%87%8F%E7%BA%A7%E9%94%81%E5%8A%A0%E8%A7%A3%E9%94%81%E8%BF%87%E7%A8%8B"><span class="toc-text">重量级锁加解锁过程</span></a></li></ol></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

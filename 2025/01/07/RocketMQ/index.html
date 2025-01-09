@@ -1,0 +1,750 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>RocketMQ - 求知之旅</title>
+
+  
+    <meta name="description" content="官网为什么选择RocketMQ | RocketMQ GitHub - apache&#x2F;rocketmq: Apache RocketMQ is a cloud native messaging and streaming platform, making it simple to build event-driven applications. RocketMQ安装下载可以到Rocket">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RocketMQ">
+<meta property="og:url" content="http://example.com/2025/01/07/RocketMQ/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="官网为什么选择RocketMQ | RocketMQ GitHub - apache&#x2F;rocketmq: Apache RocketMQ is a cloud native messaging and streaming platform, making it simple to build event-driven applications. RocketMQ安装下载可以到Rocket">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/6eb0ee2da5de59c45156749d833a8839.png">
+<meta property="og:image" content="http://example.com/images/6600f7d7f47b31c515ae81bb11a8fcce.png">
+<meta property="og:image" content="http://example.com/images/81c0cc3d1e07933c9cd7607243e75dbf.png">
+<meta property="og:image" content="http://example.com/images/374b3931098957c320631d42b1381455.png">
+<meta property="og:image" content="http://example.com/images/74ecc98366130975c3dcf9a7ebcbb775.png">
+<meta property="og:image" content="http://example.com/images/87db97a58f621d77e32175d02d031074.png">
+<meta property="og:image" content="http://example.com/images/78a29a1edbb63641f9bff179b8bf3f5e.png">
+<meta property="og:image" content="http://example.com/images/b0607a532b085d50ede2c1e37d899e62.png">
+<meta property="og:image" content="http://example.com/images/76604560bf125b8dd9ceba1f8a1c70ac.png">
+<meta property="og:image" content="http://example.com/images/f3675a08db0f702fa77e8b63d59ba969.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.778Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.024Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/6eb0ee2da5de59c45156749d833a8839.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/RocketMQ/">RocketMQ</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.778Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.024Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>RocketMQ</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h1><p><a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/">为什么选择RocketMQ | RocketMQ</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq">GitHub - apache&#x2F;rocketmq: Apache RocketMQ is a cloud native messaging and streaming platform, making it simple to build event-driven applications.</a></p>
+<h1 id="RocketMQ安装"><a href="#RocketMQ安装" class="headerlink" title="RocketMQ安装"></a>RocketMQ安装</h1><h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p>可以到RocketMQ官网选择合适的版本下载：<a target="_blank" rel="noopener" href="https://rocketmq.apache.org/download">https://rocketmq.apache.org/download</a><br>也可以到RocketMQ github下载：<a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq">https://github.com/apache/rocketmq</a></p>
+<p>启动之前先设置好环境变量<br>ROCKETMQ_HOME：&lt;rocketmq安装目录&gt;</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/6eb0ee2da5de59c45156749d833a8839.png"></p>
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p><strong>NameServer启动</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;rocketmq安装目录&gt;\bin\mqnamesrv.cmd</span><br></pre></td></tr></table></figure>
+
+<p><strong>Broker启动</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;rocketmq安装目录&gt;\bin\mqbroker.cmd -c &lt;配置文件地址&gt; -n &lt;NameServer地址&gt;</span><br><span class="line">//注：除了使用-n参数外，也可以使用NAMESRV_ADDR环境变量配置NameServer地址</span><br><span class="line">//注：除了使用</span><br></pre></td></tr></table></figure>
+
+<p><strong>Proxy启动</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;rocketmq安装目录&gt;\bin\mqproxy.cmd -pc &lt;配置文件地址&gt; -n &lt;NameServer地址&gt;</span><br><span class="line">//注：除了使用-n参数外，也可以使用NAMESRV_ADDR环境变量配置NameServer地址</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>官方文档中并没有提供全面配置参考，所以只能通过源码查看全面的配置项，源码中每个组件都有一个单独的配置类，变量名就对应配置文件中的配置项</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>源码全限定类名</th>
+<th>配置文件路径</th>
+<th>配置文件名</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NameServer</td>
+<td>org.apache.rocketmq.common.namesrv.NamesrvConfig</td>
+<td>userhome&#x2F;namesrv&#x2F;</td>
+<td>namesrv.properties</td>
+</tr>
+<tr>
+<td>Broker</td>
+<td>org.apache.rocketmq.common.BrokerConfig<br/>org.apache.rocketmq.store.config.MessageStoreConfig</td>
+<td>rabbitmq目录&#x2F;conf</td>
+<td>broker.conf</td>
+</tr>
+<tr>
+<td>Proxy</td>
+<td>org.apache.rocketmq.proxy.config.ProxyConfig</td>
+<td>rabbitmq目录&#x2F;conf</td>
+<td>rmq-proxy.json</td>
+</tr>
+</tbody></table>
+<h2 id="可视化"><a href="#可视化" class="headerlink" title="可视化"></a>可视化</h2><p>RocketMQ可视化源码下载地址：<a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq-dashboard">https://github.com/apache/rocketmq-dashboard</a><br>下载后修改application.properties文件rocketmq.config.namesrvAddr配置为上面NameServer的地址，然后打包运行即可</p>
+<h1 id="RocketMQ结构"><a href="#RocketMQ结构" class="headerlink" title="RocketMQ结构"></a>RocketMQ结构</h1><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/6600f7d7f47b31c515ae81bb11a8fcce.png"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/81c0cc3d1e07933c9cd7607243e75dbf.png"></p>
+<ol>
+<li><font style="color:rgb(44, 44, 54);">NameServer：负责存储集群元数据，维护了 Broker 地址等信息，通常以集群的方式部署，但是它是无状态的，各实例间相互不进行信息通讯，每个实例维护同样的数据</font></li>
+<li><font style="color:rgb(44, 44, 54);">Broker：</font><font style="color:rgb(44, 44, 54);">主要负责消息的存储、投递和查询以及服务高可用保证。</font></li>
+<li><font style="color:rgb(44, 44, 54);">Proxy：客户端和服务端之间的代理层，提供了额外的安全性和功能增强，Proxy使用GRPC解决了多语言使用RocketMQ的问题，如果在Java环境下使用Remoting协议，该组件不是必须的</font></li>
+<li>生产者：向Broker或者Proxy发送消息</li>
+<li><font style="color:rgb(44, 44, 54);">生产者组：多个生产者构成的生产者组，主要作用是当其中一个生产者发送完事务消息后宕机了，Broker可以通过检查同生产者组中的其他生产者以确认事务状态</font></li>
+<li><font style="color:rgb(44, 44, 54);">消费者：从Broker或者Proxy消费消息</font></li>
+<li><font style="color:rgb(44, 44, 54);">消费者组：多个消费者组成的消费者组，是Topic向消费者发送消息的一个逻辑分组，Topic会将消息发送给所有订阅的消费者组，然后消费者组内部根据消息模式，如果是广播模式组内则所有消费者都消费，如果是集群模式则根据</font><a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/featureBehavior/08consumerloadbalance">负载均衡</a><font style="color:rgb(44, 44, 54);">选择一个消费者消费，负载均衡分为两种</font><ol>
+<li><font style="color:rgb(44, 44, 54);">消息粒度的负载均衡，5.0开始支持，简单来说就是单个队列可以将消息按照负载策略投递到消费者组内多个消费者，如果topic有多个队列，每个队列都是这种模式</font></li>
+<li><font style="color:rgb(44, 44, 54);">队列粒度的负载均衡，简单来说就是单个队列只支持将消息发送给固定的消费者，这里的负载均衡指的是，同一个topic下的队列对于一个消费者组都将分配一个消费者，如果消费者少于队列，则多个队列分配同一个消费者，如果消费者多于队列，则每个队列分配一个消费者后，剩余消费者将空闲，如果消费者出现问题，比如下线了，那么将重新分配</font></li>
+</ol>
+</li>
+<li><font style="color:rgb(44, 44, 54);">Topic：消息主题，消息传输和存储的顶层容器（逻辑容器），用于标识同一类业务逻辑的消息，可以理解为消息分组，所有消息都会属于一个Topic，生产者以Topic为目标投递消息，消费者也以Topic为目标消费消息，5.0开始，特定类型的消息只能投递到特定类型的Topic</font></li>
+<li><font style="color:rgb(44, 44, 54);">Queue：消息队列，消息存储和传输的实际容器，也是消息的最小存储单元，Topic由多个队列组成，消息储存在队列，而队列属于Topic，物理意义上，生产者的消息直接投递到队列，而消费者直接从队列获取消息</font></li>
+</ol>
+<h1 id="消息顺序性"><a href="#消息顺序性" class="headerlink" title="消息顺序性"></a>消息顺序性</h1><p>从RocketMQ的结构来看，消息的传递简单来说就是从生产者推送到队列，队列再推送到消费者，只是这两步都受到很多逻辑的控制，而且消息的顺序性又涉及到全局顺序性和局部顺序性，这里默认生产者同步生成和消费者同步消费</p>
+<ol>
+<li>全局顺序性：全局顺序性的要求下，那么RocketMQ只能有一个生产者，一个队列，一个消费者</li>
+<li>局部顺序性：局部顺序性的要求下，即将按类别保证消息顺序性，那么要保证同一类别消息从同一生产者生产，并且投递到同一队列，再由同一消费者消费<ol>
+<li>保证同一类别消息由同一生产者生产，这一步很好保证</li>
+<li>保证同一类别消息进入同一队列，RocketMQ支持在发送消息时就确定投递到哪个队列，不过并不是直接设置某个消息，而是为生产者设置一个队列选择器，我们自定义实现设置队列的逻辑，5.0支持顺序消息，可以设置消息分组，同一分组的消息，按顺序投递，不过底层就是通过对消息分组的名称进行hash取模以确定队列</li>
+</ol>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> MessageQueueImpl <span class="title function_">takeMessageQueueByMessageGroup</span><span class="params">(String messageGroup)</span> &#123;</span><br><span class="line">    <span class="type">long</span> <span class="variable">hashCode</span> <span class="operator">=</span> Hashing.sipHash24().hashBytes(messageGroup.getBytes(StandardCharsets.UTF_8)).asLong();</span><br><span class="line">    <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> LongMath.mod(hashCode, <span class="built_in">this</span>.messageQueues.size());</span><br><span class="line">    <span class="keyword">return</span> (MessageQueueImpl)<span class="built_in">this</span>.messageQueues.get(index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<pre><code>3. 要保证由同一消费者消费，要考虑消费者组内是否使用到了消息粒度的负载均衡，因为消息粒度的负载均衡下，队列可能随机将消息投递到某一个消费者，队列粒度的负载均衡不存在这个问题，或者直接控制消费者组内部只有一个消费者
+</code></pre>
+<h1 id="消息持久性"><a href="#消息持久性" class="headerlink" title="消息持久性"></a>消息持久性</h1><p>RocketMQ具体持久化的路径默认为userhome&#x2F;store，windows中为UserProfile环境变量，想自定义的话可通过storePathRootDir配置项配置</p>
+<p>其中比较重要的三个持久文件是CommitLog，ConsumeQueue，IndexFile</p>
+<ol>
+<li>CommitLog：消息的实际存储文件，<font style="color:rgb(44, 44, 54);">设计原则是保证高吞吐量，它是一个顺序写磁盘的过程，非常适合于利用现代存储设备的顺序写优势，使用到了内存映射技术（mmap），默认固定大小为1个G，原因是因为内存映射技术对于大小有限制，</font>CommitLog文件是全局的</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/374b3931098957c320631d42b1381455.png"></p>
+<ol start="2">
+<li>ConsumeQueue：<font style="color:rgb(44, 44, 54);">提供了一种快速访问消息的手段，</font>它记录了消息在CommitLog中的offset和size以及消息tag的hashcode，每条消息的信息占用的大小相同，所以只需要根据<a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/featureBehavior/09consumerprogress#%E6%B6%88%E8%B4%B9%E8%BF%9B%E5%BA%A6%E5%8E%9F%E7%90%86">消费位点</a>以及信息占用大小，就可以非常快速的定位到消息信息在ConsumeQueue的位置，进而快速从CommitLog中找到消息，它同样是顺序写并且使用到了内存映射技术，每个队列都有一个ConsumeQueue文件</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/74ecc98366130975c3dcf9a7ebcbb775.png"></p>
+<ol start="3">
+<li>IndexFile：结构有点类似HashMap，使用消息的Key作为索引，提供了一种通过Key快速访问消息的手段，如果消息没有Key，那么不会向IndexFile写入，IndexFile也是全局的，<a target="_blank" rel="noopener" href="https://blog.csdn.net/eclipse9527/article/details/122131297">参考文档</a></li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/87db97a58f621d77e32175d02d031074.png"></p>
+<p>除了以上三个，还有一些其他的持久化文件，具体可进入目录中查看，这里额外介绍一下consumerOffset.json文件，默认在config目录下，这个文件存储的就是消费位点，记录了Topic对应每个订阅的消费者组在每个队列的消费位点</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/78a29a1edbb63641f9bff179b8bf3f5e.png"></p>
+<h1 id="消息模式"><a href="#消息模式" class="headerlink" title="消息模式"></a>消息模式</h1><ol>
+<li><font style="color:rgb(51, 51, 51);">集群消息：这方方式可以实现类似ActiveMQ负载均衡客户端的功能，同一个ConsumerGroup下的所有Consumer已负载均衡的方式消费消息。比较特殊的是，这种方式可以支持生产端先发送消息到Broker，消费端再订阅主题进行消费，比较灵活。RocketMQ默认为该模式</font></li>
+<li><font style="color:rgb(51, 51, 51);"> 广播消息：在这种模式下，生产端发送到Topic下的消息，会被订阅了该Topic的所有Consumer消费，即使它们处于同一个ConsumerGroup</font></li>
+</ol>
+<h1 id="消费模式"><a href="#消费模式" class="headerlink" title="消费模式"></a>消费模式</h1><p>官方文档：<a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/featureBehavior/06consumertype">https://rocketmq.apache.org/zh/docs/featureBehavior/06consumertype</a></p>
+<p><font style="color:rgb(44, 44, 54);">Apache RocketMQ 提供了两种消费消息的方式：Pull（拉取）消费和Push（推送）消费。尽管术语上存在区别，但实际上，在RocketMQ中所谓的Push消费也是一种基于Pull机制的实现。</font></p>
+<p><strong><font style="color:rgb(44, 44, 54);">Push（推送）消费</font></strong></p>
+<p><font style="color:rgb(44, 44, 54);">虽然被称为“Push”，但实际上RocketMQ的Push消费模型更像是一种智能化的Pull模型。通过一个长轮询线程，异步拉取消息，再提交给消费线程</font></p>
+<p><strong><font style="color:rgb(44, 44, 54);">特点：</font></strong></p>
+<ul>
+<li><strong><font style="color:rgb(44, 44, 54);">自动拉取</font></strong><font style="color:rgb(44, 44, 54);">：当消息到达时，Broker会通知Consumer，由Consumer主动去拉取。</font></li>
+<li><strong><font style="color:rgb(44, 44, 54);">异步处理</font></strong><font style="color:rgb(44, 44, 54);">：消息到达后，Consumer可以在后台异步处理消息。</font></li>
+<li><strong><font style="color:rgb(44, 44, 54);">简化编程模型</font></strong><font style="color:rgb(44, 44, 54);">：开发者只需要关心消息处理逻辑，不需要频繁地编写拉取消息的代码。</font></li>
+</ul>
+<p><strong><font style="color:rgb(44, 44, 54);">Pull（拉取）消费</font></strong></p>
+<p><font style="color:rgb(44, 44, 54);">Pull消费模式下，消费者主动向Broker请求消息，决定何时拉取以及拉取多少消息。这种方式给予了消费者更多的控制权。</font></p>
+<p><strong><font style="color:rgb(44, 44, 54);">特点：</font></strong></p>
+<ul>
+<li><strong><font style="color:rgb(44, 44, 54);">主动权在消费者</font></strong><font style="color:rgb(44, 44, 54);">：消费者可以根据自己的处理能力主动向Broker拉取消息。</font></li>
+<li><strong><font style="color:rgb(44, 44, 54);">灵活控制</font></strong><font style="color:rgb(44, 44, 54);">：消费者可以根据实际负载情况灵活地控制拉取消息的速度和数量。</font></li>
+<li><strong><font style="color:rgb(44, 44, 54);">流量控制</font></strong><font style="color:rgb(44, 44, 54);">：能够更好地控制消息的处理速率，避免因为瞬时大量消息涌入而导致系统过载。</font></li>
+</ul>
+<p><strong><font style="color:rgb(44, 44, 54);">实现机制</font></strong></p>
+<p><font style="color:rgb(44, 44, 54);">尽管Push模式表面上看起来是由Broker主动推送消息给Consumer，但实际上，RocketMQ依然依赖于Pull机制来实现消息消费。</font></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/b0607a532b085d50ede2c1e37d899e62.png"></p>
+<h1 id="消息过滤"><a href="#消息过滤" class="headerlink" title="消息过滤"></a>消息过滤</h1><p>官方文档：<a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/featureBehavior/07messagefilter">https://rocketmq.apache.org/zh/docs/featureBehavior/07messagefilter</a></p>
+<ol>
+<li><strong><font style="color:rgb(44, 44, 54);">基于标签（Tag）的过滤</font></strong><font style="color:rgb(44, 44, 54);">：</font><ul>
+<li><font style="color:rgb(44, 44, 54);">在 RocketMQ 中，生产者可以为每条消息设置一个或多个标签（Tag），而消费者则可以通过指定特定的标签来过滤消息。这是最基本的过滤方式，通常用于根据消息的主题或类别来筛选消息。<br></font><font style="color:rgb(44, 44, 54);">由于ConsumerQueue中就包含了Tag的hashcode，所以通过Tag过滤，在ConsumerQueue可以实现第一次过滤，但是由于hashcode可能会发生hash碰撞，所以拿到消息后，还需要再过滤一次</font></li>
+</ul>
+</li>
+<li><strong><font style="color:rgb(44, 44, 54);">SQL 表达式过滤</font></strong><font style="color:rgb(44, 44, 54);">：</font><ul>
+<li><font style="color:rgb(44, 44, 54);">SQL92 模式的过滤允许消费者使用类似于 SQL 的语法来定义更为复杂的过滤条件。这种方式提供了比基于标签过滤更强的表达能力，允许在生产者自定义属性，在消费者端编写过滤条件。</font></li>
+</ul>
+</li>
+</ol>
+<h1 id="消息丢失"><a href="#消息丢失" class="headerlink" title="消息丢失"></a>消息丢失</h1><p><strong><font style="color:rgb(44, 44, 54);">生产者可通过设置同步发送保证消息成功到达Broker</font></strong></p>
+<ul>
+<li><font style="color:rgb(44, 44, 54);">同步发送：使用同步发送模式，即</font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;sendSync&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);">方法。这种模式下，发送消息后，会阻塞等待broker的回复，异步发送可以异步接收broker的回复，但是同步发送安全性更高，单向发送是最不安全的，无法确定消息是否成功推送到</font></li>
+</ul>
+<p><strong><font style="color:rgb(44, 44, 54);">Broker可通过同步刷盘以及搭建集群保证</font></strong></p>
+<ul>
+<li><font style="color:rgb(44, 44, 54);">同步刷盘：即消息到达broker后，等待刷盘完成后才会生产者，如果在没有刷盘之前broker就下线了，那么对生产者而言，这条消息是没有推送成功的，那么在broker上线之后，它会尝试继续推送，如果刷盘之后broker宕机，但是消息已经持久化了，重新上线后，仍然可以被消费</font></li>
+<li><font style="color:rgb(44, 44, 54);">搭建集群：如果觉得单机节点还不够安全，还可以采取多副本的模式，rocketmq支持一主多从，多主多从，在消息复制方面，rocketmq支持同步复制（也叫同步双写）以及异步复制，同步复制会保证消息复制给所有从节点后才返回给生产者</font></li>
+</ul>
+<p><strong><font style="color:rgb(44, 44, 54);">消费者可通过</font><strong><strong><font style="color:rgb(44, 44, 54);">手动应答</font></strong></strong><font style="color:rgb(44, 44, 54);">应答保证消息被消费者消费</font></strong></p>
+<ul>
+<li><font style="color:rgb(44, 44, 54);">手动应答：消费者消费完消息后，手动向Broker确认消息已被成功消费。如果消费过程中出现问题，消费者不应确认消息消费，以便消息可以被重新消费。这种模式下只要broker没有收到消费者的应答，就会继续尝试推送，当然，超过一定次数，就会被认为是死信消息</font></li>
+</ul>
+<h1 id="集群架构"><a href="#集群架构" class="headerlink" title="集群架构"></a>集群架构</h1><p><a target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-5eawf/st01q1/ngvlg66l3z4bbf8i">RocketMQ集群</a></p>
+<h1 id="消息积压"><a href="#消息积压" class="headerlink" title="消息积压"></a>消息积压</h1><p><font style="color:rgb(44, 44, 54);">处理 RocketMQ 中的消息积压可以从很多方面考虑解决问题，比如在代码层面优化消费者代码逻辑，提升消费速度，或者直接提升硬件资源，提升消费速度，从RocketMQ来考虑，可以考虑以下几点</font></p>
+<ol>
+<li><strong><font style="color:rgb(44, 44, 54);">增加消费者数量，这里需要注意RocketMQ消费者组负载均衡的方式</font></strong><font style="color:rgb(44, 44, 54);">：</font><ol>
+<li><font style="color:rgb(44, 44, 54);">如果是消息粒度的负载均衡，基于一个队列可以负载多个消费者的特性，可以通过增加更多的消费者来提高消息的处理速度，从而减少队列中的积压。确保你的消费者程序能够并行处理消息。</font></li>
+<li><font style="color:rgb(44, 44, 54);">如果是队列粒度的负载均衡，就得判断消费者的数量了，如果消费者的数量已经等于甚至大于队列的数量，多余的消费者就无法发挥作用了，这时候最好的方法就是通过消费者将消息转移到新的Topic中，尽可能的多一点队列，这样就可以分配更多的消费者，提升消费速度</font></li>
+</ol>
+</li>
+<li><strong><font style="color:rgb(44, 44, 54);">消息批处理</font></strong><font style="color:rgb(44, 44, 54);">：</font><ul>
+<li><font style="color:rgb(44, 44, 54);">允许消费者一次获取多条消息，而不是一条一条地处理。</font></li>
+</ul>
+</li>
+</ol>
+<p><font style="color:rgb(44, 44, 54);">处理消息积压时，重要的是要根据具体的应用场景和资源限制选择最合适的方法。同时，持续监控系统性能和消息队列状态对于预防未来的问题也是至关重要的。</font></p>
+<h1 id="消息事务"><a href="#消息事务" class="headerlink" title="消息事务"></a>消息事务</h1><p><a target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-5eawf/st01q1/dt3i30tvdgntk14e#DfEva">Spring Boot整合RocketMQ</a></p>
+<h1 id="延时队列"><a href="#延时队列" class="headerlink" title="延时队列"></a>延时队列</h1><p><a target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-5eawf/st01q1/zacdggwfyqyz59d7">RocketMQ延时队列</a></p>
+<p>附件</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/76604560bf125b8dd9ceba1f8a1c70ac.png"></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/f3675a08db0f702fa77e8b63d59ba969.png"></p>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/Zookeeper%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">Zookeeper基本概念</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/RocketMQ%E9%9B%86%E7%BE%A4/">RocketMQ集群</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%98%E7%BD%91"><span class="toc-text">官网</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RocketMQ%E5%AE%89%E8%A3%85"><span class="toc-text">RocketMQ安装</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD"><span class="toc-text">下载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8"><span class="toc-text">启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE"><span class="toc-text">配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="toc-text">可视化</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RocketMQ%E7%BB%93%E6%9E%84"><span class="toc-text">RocketMQ结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%A1%BA%E5%BA%8F%E6%80%A7"><span class="toc-text">消息顺序性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E6%8C%81%E4%B9%85%E6%80%A7"><span class="toc-text">消息持久性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E6%A8%A1%E5%BC%8F"><span class="toc-text">消息模式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F"><span class="toc-text">消费模式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E8%BF%87%E6%BB%A4"><span class="toc-text">消息过滤</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%B8%A2%E5%A4%B1"><span class="toc-text">消息丢失</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84"><span class="toc-text">集群架构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E7%A7%AF%E5%8E%8B"><span class="toc-text">消息积压</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%BA%8B%E5%8A%A1"><span class="toc-text">消息事务</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BB%B6%E6%97%B6%E9%98%9F%E5%88%97"><span class="toc-text">延时队列</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

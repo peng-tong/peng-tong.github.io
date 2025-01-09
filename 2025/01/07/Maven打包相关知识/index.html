@@ -1,0 +1,627 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>Maven打包相关知识 - 求知之旅</title>
+
+  
+    <meta name="description" content="maven生命周期 上图所示，就是平时maven所有的执行方式，之前只知道clean是清除方法，install是打包方法等，但其实除了clean，下面的是按顺序执行的，比如执行test，会先执行validate、compile，后面的方法同理。 那它们每个都是什么意思：  clean：清除项目构建结果 validate：验证项目 compile：编译项目源码，包括配置文件等 test：编译测试代码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Maven打包相关知识">
+<meta property="og:url" content="http://example.com/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="maven生命周期 上图所示，就是平时maven所有的执行方式，之前只知道clean是清除方法，install是打包方法等，但其实除了clean，下面的是按顺序执行的，比如执行test，会先执行validate、compile，后面的方法同理。 那它们每个都是什么意思：  clean：清除项目构建结果 validate：验证项目 compile：编译项目源码，包括配置文件等 test：编译测试代码">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/8e2f8f0d6683ac218950bc5f478c9306.png">
+<meta property="og:image" content="http://example.com/images/ed89cf0c05a1e2eb068b1a5c228b18b5.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.787Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.036Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/8e2f8f0d6683ac218950bc5f478c9306.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E9%83%A8%E7%BD%B2%E8%BF%90%E7%BB%B4/">部署运维</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.787Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.036Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Maven打包相关知识</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="maven生命周期"><a href="#maven生命周期" class="headerlink" title="maven生命周期"></a>maven生命周期</h1><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/8e2f8f0d6683ac218950bc5f478c9306.png"></p>
+<p>上图所示，就是平时maven所有的执行方式，之前只知道clean是清除方法，install是打包方法等，但其实除了clean，下面的是按顺序执行的，比如执行test，会先执行validate、compile，后面的方法同理。</p>
+<p>那它们每个都是什么意思：</p>
+<ol>
+<li>clean：清除项目构建结果</li>
+<li>validate：验证项目</li>
+<li>compile：编译项目源码，包括配置文件等</li>
+<li>test：编译测试代码，运行项目测试</li>
+<li>package：将项目打包成可发布的格式，如jar、war</li>
+<li>verify：对生成的包进行验证</li>
+<li>install：将项目构建结果发布到本地仓库或者远程仓库</li>
+<li>site：生成项目站点文件</li>
+<li>deploy：将项目构建结果部署到远程仓库或服务器</li>
+</ol>
+<p>它们每个阶段都会根据规则执行相应的插件，比如compile阶段会执行maven-resources-plugin、maven-compiler-plugin等，只要引入了特定的插件，在执行到某个阶段时就会执行这个插件。有些插件是无法单独执行的，比如maven-jar-plugin等打包插件，如果没有编译的源码，是无法执行的，或者打包出来的包有问题，还有maven-install-plugin，如果没有前面的构建，也无法正常发布。下面是执行instal时，执行的阶段及对应的插件，有些阶段没有对应的插件，所以没有执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">------------------------------------compile</span><br><span class="line">[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ SzbaDrainAgeManage ---</span><br><span class="line">[INFO] </span><br><span class="line">[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ SzbaDrainAgeManage ---</span><br><span class="line">[INFO] </span><br><span class="line">------------------------------------test</span><br><span class="line">[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ SzbaDrainAgeManage </span><br><span class="line">[INFO] </span><br><span class="line">[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ SzbaDrainAgeManage ---</span><br><span class="line">[INFO] </span><br><span class="line">[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ SzbaDrainAgeManage ---</span><br><span class="line">[INFO] </span><br><span class="line">------------------------------------package</span><br><span class="line">[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ SzbaDrainAgeManage ---</span><br><span class="line">[INFO] </span><br><span class="line">[INFO] --- spring-boot-maven-plugin:2.2.6.RELEASE:repackage (default) @ SzbaDrainAgeManage ---</span><br><span class="line">[INFO] </span><br><span class="line">[INFO] --- maven-assembly-plugin:3.1.1:single (make-assembly) @ SzbaDrainAgeManage ---</span><br><span class="line">[INFO] </span><br><span class="line">------------------------------------install</span><br><span class="line">[INFO] --- maven-install-plugin:2.4:install (default-install) @ SzbaDrainAgeManage ---</span><br></pre></td></tr></table></figure>
+
+<h1 id="maven-package"><a href="#maven-package" class="headerlink" title="maven package"></a>maven package</h1><p>maven package是打包执行包的时候，是比较重要的一个步骤，它包括一个引入第三方包的过程，这里一般只会引入maven定义的依赖包，自己手动添加的第三方依赖包是无法被一起打包的，哪怕通过一些方法将手动引入的第三方包一起打包，也很有可能出现一些出乎意料的问题，所以最好不用手动引入第三方包（包括<scope>system</scope>的方式）</p>
+<h1 id="maven-profiles配置"><a href="#maven-profiles配置" class="headerlink" title="maven profiles配置"></a>maven profiles配置</h1><p>profile配置可以选择不同的环境打包，像下面的配置，就有两个选择，第一个fat是使用spring-boot-maven-plugin打包，spring-boot-maven-plugin映入了maven-shade-plugin，所以会打包出一个超级jar包，即可运行jar文件中包括了主程序以及maven依赖包，第二个build使用maven-jar-plugin和maven-assembly-plugin，maven-jar-plugin会生成一个可执行jar包，但是不会包括第三方包，所以无法直接执行，而maven-assembly-plugin会将maven-jar-plugin和第三方包，以及自定义的一些文件一起打包成压缩包，并且通过配置使maven-jar-plugin生成的jar可以运行</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">profiles</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">profile</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>fat<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">mainClass</span>&gt;</span>com.gisinfo.sand.SandApplication<span class="tag">&lt;/<span class="name">mainClass</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--                            &lt;fork&gt;true&lt;/fork&gt;--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">jvmArguments</span>&gt;</span>-Dfile.encoding=UTF-8<span class="tag">&lt;/<span class="name">jvmArguments</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goal</span>&gt;</span>repackage<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">profile</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">profile</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>build<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">activation</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">activeByDefault</span>&gt;</span>true<span class="tag">&lt;/<span class="name">activeByDefault</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">activation</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 指定启动类，将依赖打成外部jar包 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-jar-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">archive</span>&gt;</span></span><br><span class="line">              <span class="comment">&lt;!-- 生成的jar中，不要包含pom.xml和pom.properties这两个文件 --&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">addMavenDescriptor</span>&gt;</span>false<span class="tag">&lt;/<span class="name">addMavenDescriptor</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">manifest</span>&gt;</span></span><br><span class="line">                <span class="comment">&lt;!-- 是否要把第三方jar加入到类构建路径 --&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">addClasspath</span>&gt;</span>true<span class="tag">&lt;/<span class="name">addClasspath</span>&gt;</span></span><br><span class="line">                <span class="comment">&lt;!-- 外部依赖jar包的最终位置 --&gt;</span></span><br><span class="line">                <span class="comment">&lt;!-- 因为我们将第三方jar和本项目jar放在同一个目录下，这里就使用./ --&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">classpathPrefix</span>&gt;</span>./<span class="tag">&lt;/<span class="name">classpathPrefix</span>&gt;</span></span><br><span class="line">                <span class="comment">&lt;!-- 项目启动类 --&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">mainClass</span>&gt;</span>com.gisinfo.sand.SandApplication<span class="tag">&lt;/<span class="name">mainClass</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">archive</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!--主要使用的是maven提供的assembly插件完成--&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-assembly-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.1.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">descriptors</span>&gt;</span></span><br><span class="line">              <span class="comment">&lt;!--具体的配置文件--&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">descriptor</span>&gt;</span>src/main/assembly/assembly.xml<span class="tag">&lt;/<span class="name">descriptor</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">descriptors</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">id</span>&gt;</span>make-assembly<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">              <span class="comment">&lt;!--绑定到maven操作类型上--&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">              <span class="comment">&lt;!--执行目标，不同的插件有不同的执行目标，运行一次--&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goal</span>&gt;</span>single<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">profile</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">profiles</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/ed89cf0c05a1e2eb068b1a5c228b18b5.png"></p>
+<h1 id="maven-assembly-plugin"><a href="#maven-assembly-plugin" class="headerlink" title="maven-assembly-plugin"></a>maven-assembly-plugin</h1><p>maven-assembly-plugin虽然在package阶段执行，但是并不会生成可发布的格式（jar、war），而是根据配置生成分发包(zip、tar.gz等)，所以通常需要和其他package阶段的插件一起使用，比如maven-jar-plugin等，下面是assembly插件引入配置</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-jar-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">archive</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- 生成的jar中，不要包含pom.xml和pom.properties这两个文件 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">addMavenDescriptor</span>&gt;</span>false<span class="tag">&lt;/<span class="name">addMavenDescriptor</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">manifest</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 是否要把第三方jar加入到类构建路径 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">addClasspath</span>&gt;</span>true<span class="tag">&lt;/<span class="name">addClasspath</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 外部依赖jar包的最终位置 --&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 因为我们将第三方jar和本项目jar放在同一个目录下，这里就使用./ --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">classpathPrefix</span>&gt;</span>./<span class="tag">&lt;/<span class="name">classpathPrefix</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 项目启动类 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">mainClass</span>&gt;</span>com.gisinfo.sand.SandApplication<span class="tag">&lt;/<span class="name">mainClass</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">archive</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">  <span class="comment">&lt;!--主要使用的是maven提供的assembly插件完成--&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-assembly-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.1.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">descriptors</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!--具体的配置文件--&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">descriptor</span>&gt;</span>src/main/assembly/assembly.xml<span class="tag">&lt;/<span class="name">descriptor</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">descriptors</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">id</span>&gt;</span>make-assembly<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!--绑定到maven操作类型上--&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!--执行目标，不同的插件有不同的执行目标，运行一次--&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">goal</span>&gt;</span>single<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">assembly</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>bin<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">formats</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">format</span>&gt;</span>zip<span class="tag">&lt;/<span class="name">format</span>&gt;</span><span class="comment">&lt;!--把配置文件和jar包等压缩成什么文件格式，这里可以有：zip，tar等--&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">formats</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">includeBaseDirectory</span>&gt;</span>true<span class="tag">&lt;/<span class="name">includeBaseDirectory</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--第三方依赖设置--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencySets</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependencySet</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 不使用项目的artifact，第三方jar不要解压，打包进zip文件的lib目录 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">useProjectArtifact</span>&gt;</span>false<span class="tag">&lt;/<span class="name">useProjectArtifact</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>lib<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">unpack</span>&gt;</span>false<span class="tag">&lt;/<span class="name">unpack</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependencySet</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencySets</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--文件设置--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">fileSets</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            0755-&gt;即用户具有读/写/执行权限，组用户和其它用户具有读写权限；</span></span><br><span class="line"><span class="comment">            0644-&gt;即用户具有读写权限，组用户和其它用户具有只读权限；</span></span><br><span class="line"><span class="comment">        --&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 将src/main/assembly/bin目录下的所有文件输出到打包后的bin目录中 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">fileSet</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">directory</span>&gt;</span>src/main/assembly/bin<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>bin<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">fileMode</span>&gt;</span>0755<span class="tag">&lt;/<span class="name">fileMode</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--如果是脚本，一定要改为unix.如果是在windows上面编码，会出现dos编写问题--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">lineEnding</span>&gt;</span>unix<span class="tag">&lt;/<span class="name">lineEnding</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">filtered</span>&gt;</span>true<span class="tag">&lt;/<span class="name">filtered</span>&gt;</span><span class="comment">&lt;!-- 是否进行属性替换，脚本中参数变量为pom的profiles中properties的值(该配置，是把mvn中属性值映射生成到sh文件中，如： $&#123;package-name&#125;) --&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">fileSet</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 将src/main/assembly/config目录下的所有文件输出到打包后的config目录中 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">fileSet</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">directory</span>&gt;</span>src/main/assembly/config<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>config<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">fileMode</span>&gt;</span>0644<span class="tag">&lt;/<span class="name">fileMode</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">fileSet</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 将src/main/resources下配置文件打包到config目录 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">fileSet</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">directory</span>&gt;</span>src/main/resources<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>/config<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--            &lt;includes&gt;--&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--                &lt;include&gt;**/*.xml&lt;/include&gt;--&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--                &lt;include&gt;**/*.properties&lt;/include&gt;--&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--                &lt;include&gt;**/*.yml&lt;/include&gt;--&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--            &lt;/includes&gt;--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">filtered</span>&gt;</span>true<span class="tag">&lt;/<span class="name">filtered</span>&gt;</span><span class="comment">&lt;!-- 是否进行属性替换 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">fileSet</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 将项目启动jar打包到lib目录中 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">fileSet</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--            &lt;directory&gt;target&lt;/directory&gt;--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">directory</span>&gt;</span>$&#123;project.build.directory&#125;<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>lib<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">includes</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">include</span>&gt;</span>*.jar<span class="tag">&lt;/<span class="name">include</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">includes</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">fileSet</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 将项目说明文档打包到docs目录中 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">fileSet</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">directory</span>&gt;</span>.<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>docs<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">includes</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">include</span>&gt;</span>*.md<span class="tag">&lt;/<span class="name">include</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">includes</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">fileMode</span>&gt;</span>0644<span class="tag">&lt;/<span class="name">fileMode</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">fileSet</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">fileSet</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">directory</span>&gt;</span>docs<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>docs<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">fileMode</span>&gt;</span>0644<span class="tag">&lt;/<span class="name">fileMode</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">fileSet</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">fileSet</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">directory</span>&gt;</span>src/main/assembly/docs<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>docs<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">fileMode</span>&gt;</span>0644<span class="tag">&lt;/<span class="name">fileMode</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">fileSet</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">fileSets</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">assembly</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>引入上述配置后，在package阶段会自动生成一个zip文件，这个zip文件包括项目执行jar包、第三方依赖包（maven依赖）、配置等</p>
+<h1 id="Dspring-config-location"><a href="#Dspring-config-location" class="headerlink" title="-Dspring.config.location"></a>-Dspring.config.location</h1><p>java -Dspring.config.location&#x3D;&#x2F;config -jar xxx.jar</p>
+<p>spring.config.location是设置spring配置文件路径的，仅针对spring相关配置文件，自定义配置文件需要使用org.springframework.core.env.PropertyResolver#getProperty(“spring.config.location”)路径。</p>
+<p>没有配置spring.config.location时，spring默认读取项目classpath（jar包项目类文件的根目录）目录配置文件，但是getProperty(“spring.config.location”)为空，所以如果项目中使用spring.config.location，需要加入判空逻辑，除了classpath，默认还有其他路径，并且优先级更高，分别为</p>
+<ol>
+<li>jar包所在目录下的config文件夹</li>
+<li>jar包所在目录</li>
+<li>jar包classpath目录</li>
+</ol>
+<p>优先级从上往下</p>
+<h1 id="Dlogging-config"><a href="#Dlogging-config" class="headerlink" title="-Dlogging.config"></a>-Dlogging.config</h1><p>-Dlogging.config是Java系统属性，用于配置日志配置文件地址，spring boot也是用到它，如果不配置</p>
+<p>-Dlogging.config，那么会使用classpath:&#x2F;xxx.xml，spring boot默认使用的是<font style="color:rgb(36, 41, 47);">Logback，也就是logback-spring.xml，可以在启动时配置logback-spring.xml的位置，示例：-Dlogging.config&#x3D;.&#x2F;config&#x2F;logback-spring.xml</font></p>
+<h1 id="Java读取资源相关方法"><a href="#Java读取资源相关方法" class="headerlink" title="Java读取资源相关方法"></a>Java读取资源相关方法</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> String <span class="title function_">test</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(environment.getActiveProfiles());</span><br><span class="line">        System.out.println(environment.getDefaultProfiles());</span><br><span class="line">        System.out.println(<span class="string">&quot;this.getClass().getClassLoader().getResourceAsStream&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(IoUtil.read(<span class="built_in">this</span>.getClass().getClassLoader().getResourceAsStream(<span class="string">&quot;test.txt&quot;</span>), CharsetUtil.UTF_8));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;fail&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;this.getClass().getResourceAsStream&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(IoUtil.read(<span class="built_in">this</span>.getClass().getResourceAsStream(<span class="string">&quot;/test.txt&quot;</span>), CharsetUtil.UTF_8));<span class="comment">//这里的斜杠是必须的</span></span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;fail&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;resourceLoader.getResource&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(IoUtil.read(resourceLoader.getResource(<span class="string">&quot;classpath:test.txt&quot;</span>).getInputStream(), CharsetUtil.UTF_8));</span><br><span class="line">            System.out.println(IoUtil.read(resourceLoader.getResource(<span class="string">&quot;file:C:\\Users\\pengtong\\Desktop\\test.txt&quot;</span>).getInputStream(), CharsetUtil.UTF_8));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;fail&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;ResourceUtils.getFile&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(IoUtil.read(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(ResourceUtils.getFile(<span class="string">&quot;classpath:test.txt&quot;</span>)), CharsetUtil.UTF_8));</span><br><span class="line">            System.out.println(IoUtil.read(resourceLoader.getResource(<span class="string">&quot;file:C:/Users/pengtong/Desktop/test.txt&quot;</span>).getInputStream(), CharsetUtil.UTF_8));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;fail&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;applicationContext.getResource&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(IoUtil.read(applicationContext.getResource(<span class="string">&quot;classpath:test.txt&quot;</span>).getInputStream(), CharsetUtil.UTF_8));</span><br><span class="line">            System.out.println(IoUtil.read(resourceLoader.getResource(<span class="string">&quot;file:C:/Users/pengtong/Desktop/test.txt&quot;</span>).getInputStream(), CharsetUtil.UTF_8));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;fail&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;new File&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(IoUtil.read(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;src/main/resources/test.txt&quot;</span>)), CharsetUtil.UTF_8));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;fail&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;Paths.get&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(IoUtil.read(<span class="keyword">new</span> <span class="title class_">FileInputStream</span>(Paths.get(<span class="string">&quot;src/main/resources/test.txt&quot;</span>).toFile()), CharsetUtil.UTF_8));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;fail&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;new ClassPathResource&quot;</span>);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(IoUtil.read(<span class="keyword">new</span> <span class="title class_">ClassPathResource</span>(<span class="string">&quot;test.txt&quot;</span>).getInputStream(), CharsetUtil.UTF_8));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;fail&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;&quot;</span>);</span><br><span class="line">        System.out.println(test);</span><br><span class="line">        <span class="keyword">return</span> test;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码中所有classpath:+相对路径可以换成file:+绝对路径，底层其实就是使用了java.net.URL，所以和new File()有所区别</p>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/Bat%E5%91%BD%E4%BB%A4%E8%AE%B0%E5%BD%95/">Bat命令记录</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/RabbitMQ/">RabbitMQ</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#maven%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">maven生命周期</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#maven-package"><span class="toc-text">maven package</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#maven-profiles%E9%85%8D%E7%BD%AE"><span class="toc-text">maven profiles配置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#maven-assembly-plugin"><span class="toc-text">maven-assembly-plugin</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Dspring-config-location"><span class="toc-text">-Dspring.config.location</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Dlogging-config"><span class="toc-text">-Dlogging.config</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Java%E8%AF%BB%E5%8F%96%E8%B5%84%E6%BA%90%E7%9B%B8%E5%85%B3%E6%96%B9%E6%B3%95"><span class="toc-text">Java读取资源相关方法</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

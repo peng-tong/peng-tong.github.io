@@ -1,0 +1,665 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>Http2 Header头部压缩算法 - 求知之旅</title>
+
+  
+    <meta name="description" content="前言在这里将结合netty的io.netty.handler.codec.http2.HpackDecoder#decode(io.netty.buffer.ByteBuf, io.netty.handler.codec.http2.HpackDecoder.Http2HeadersSink)方法理解，http2 header头部压缩，使用hpack算法，简单来讲就是使用静态表和动态表对头部进行索">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Http2 Header头部压缩算法">
+<meta property="og:url" content="http://example.com/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="前言在这里将结合netty的io.netty.handler.codec.http2.HpackDecoder#decode(io.netty.buffer.ByteBuf, io.netty.handler.codec.http2.HpackDecoder.Http2HeadersSink)方法理解，http2 header头部压缩，使用hpack算法，简单来讲就是使用静态表和动态表对头部进行索">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/53ca4e2fba07e1410d32d8b26d0631eb.png">
+<meta property="og:image" content="http://example.com/images/5659d4c47015ad480384992d0e7d8dd0.png">
+<meta property="og:image" content="http://example.com/images/97052edcbdd6ba997214cde6858ff028.png">
+<meta property="og:image" content="http://example.com/images/498be7e80c8432cb708a994f2cb5dc2c.png">
+<meta property="og:image" content="http://example.com/images/297295a7854f4311518772893e630da4.png">
+<meta property="og:image" content="http://example.com/images/5c27fa83af36b5529aa0f2b4fef9432e.png">
+<meta property="og:image" content="http://example.com/images/66dcaf4c6532b576d82c1b5c7f78f36e.png">
+<meta property="og:image" content="http://example.com/images/a9c8c2b5ec6727f253b1663a1f88b4f4.png">
+<meta property="og:image" content="http://example.com/images/69188206759dc1ae42acae46da134b68.png">
+<meta property="og:image" content="http://example.com/images/6d58cef2c30f3ad4a52b73beeffffaba.png">
+<meta property="og:image" content="http://example.com/images/c73ec8d768456a2e77c63b89a874a51f.png">
+<meta property="og:image" content="http://example.com/images/4076ddccb6ab773e2fb29969a53b3857.jpeg">
+<meta property="article:published_time" content="2025-01-07T13:11:51.798Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.032Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/53ca4e2fba07e1410d32d8b26d0631eb.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.798Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.032Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Http2 Header头部压缩算法</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在这里将结合netty的io.netty.handler.codec.http2.HpackDecoder#decode(io.netty.buffer.ByteBuf, io.netty.handler.codec.http2.HpackDecoder.Http2HeadersSink)方法理解，http2 header头部压缩，使用hpack算法，简单来讲就是使用静态表和动态表对头部进行索引</p>
+<ol>
+<li>静态表：静态表就是http2事先约定好的一些常用的头部，比如”:status”, “404”、”accept-encoding”, “gzip, deflate”等。</li>
+<li>动态表：而动态表就是在传递数据时，连接双方通过协议约定，将静态表中没有的头部添加到动态表中。动态表的索引值是排在静态表之后的，也就是说动态表的第一个索引值，是静态表最大索引值加一，这样就可以直接传递索引值，而不需要表明时静态表还是动态表。动态表是连接相关联的，也就是说一个服务端口，每有一个http2连接，就有一个动态表，所以同样的两个服务之间，建立的http2连接越少越好，动态表的利用率就越高，动态表的初始大小可以在Setting帧中设置SETTINGS_HEADER_TABLE_SIZE来控制</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/53ca4e2fba07e1410d32d8b26d0631eb.png"></p>
+<h1 id="传递数据的形式"><a href="#传递数据的形式" class="headerlink" title="传递数据的形式"></a>传递数据的形式</h1><p>http2 header可以传送两种数据，分别是int，和string，也就是数值和字符串</p>
+<h2 id="数值"><a href="#数值" class="headerlink" title="数值"></a>数值</h2><p>如果需要传递某一个的http2 header在静态表或者动态表中存在，那么对于该http2 header只需要传递一个索引值即可</p>
+<p>传递的数据由若干个字节组成，一字节有八位，http2 header中每个八位字节可以单独起作用，在表示数值形式时，如果只表示正数的话，一个八位字节可以表示0-255，当然http2 header的八位字节不能八位全部作为数据，在八位字节需要启到不同的作用时，八位中会有不同的高位需要作为标识，而其他的低位作为数据，我们用N代表可以作为数据的位数，至于是哪些情况，N又是多少，下面会详细讲到，比如数值作为索引，数值作为name数据长度等。示例如下图，三个高位作为标识，而五位低位作为数据，即N为5</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/5659d4c47015ad480384992d0e7d8dd0.png"></p>
+<p>这种模式就会存在两个情况</p>
+<ol>
+<li>八位字节中作为数据的位数足够表示我们需要传递的数值，比如当我们需要传递数值50的时候，而N为5的情况下，能够表示的最大数值为63，那么就足够表示数值50</li>
+<li>八位字节中作为数据的位数不足够表示我们需要传递的数值，比如当我们需要传递数值200的时候，而N为5的情况下就不足够表示200,那么这种情况下，就将当前八位字节的数据位全部置为1，表示先当前八位字节能表示的最大值，我们要传递的数值减去该字节最大值剩余的值在后面加入几位进行编码<ol>
+<li>后续字节的编码规则为，将需要编码的数值用二进制表示，并且将二进制以七位为一组进行分割，从右往左依次放入到后续字节中，是七位而不是八位是因为字节的最高位需要作为标识，判断当前编码是否结束，最后的字节的最高位置为0，表示编码结束，前面字节的最高位置为1。</li>
+<li>比如值为200，而N为5的情况下，当前字节数据位全部置为1，表示63，而200-63&#x3D;137，137则在后面添加几个字节进行编码，137的二进制表示为10001001，以七位分割得到1，0001001，按照从右往左依次添加，并且最后一个字节最高位置为0，其余字节最高位置为1的规则，那么后续就需要两个字节，分别为10001001、00000001，我们传递数值200完整的三个字节为???11111、10001001、00000001</li>
+</ol>
+</li>
+</ol>
+<p>下面是netty对数值进行编码的代码实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">encodeInteger</span><span class="params">(ByteBuf out, <span class="type">int</span> mask, <span class="type">int</span> n, <span class="type">long</span> i)</span> &#123;</span><br><span class="line">    <span class="keyword">assert</span> n &gt;= <span class="number">0</span> &amp;&amp; n &lt;= <span class="number">8</span> : <span class="string">&quot;N: &quot;</span> + n;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> <span class="variable">nbits</span> <span class="operator">=</span> <span class="number">255</span> &gt;&gt;&gt; <span class="number">8</span> - n;</span><br><span class="line">    <span class="keyword">if</span> (i &lt; (<span class="type">long</span>)nbits) &#123;</span><br><span class="line">        out.writeByte((<span class="type">int</span>)((<span class="type">long</span>)mask | i));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        out.writeByte(mask | nbits);</span><br><span class="line"></span><br><span class="line">        <span class="type">long</span> length;</span><br><span class="line">        <span class="keyword">for</span>(length = i - (<span class="type">long</span>)nbits; (length &amp; -<span class="number">128L</span>) != <span class="number">0L</span>; length &gt;&gt;&gt;= <span class="number">7</span>) &#123;</span><br><span class="line">            out.writeByte((<span class="type">int</span>)(length &amp; <span class="number">127L</span> | <span class="number">128L</span>));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        out.writeByte((<span class="type">int</span>)length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h2><p>如果某个http2 header不在静态表或者动态表中，那么就会存在一下几种情况</p>
+<ol>
+<li>对该header的value没有索引，但是对该header的name有索引，那么只有value涉及到字符串编码</li>
+<li>对该header的value和name都没有索引，那么name和value都需要涉及到字符串编码</li>
+</ol>
+<p>字符串的编码由两部分组成，第一部分是数值，是字符串长度的数值编码，可以让解码器知道后面的数据中有多少是当前字符串，在这里的数值编码N为7，因为最高位需要标识字符串编码是否使用到了霍夫曼编码，最高位为1标识使用了霍夫曼编码，最高位为0反之，第二部分就是字符串的编码</p>
+<p>hpack算法对字符串编码，有两种编码方式，一种是直接编码，即将字符串转为字节数组，另一种是通过霍夫曼编码，使用霍夫曼的前提，字符串的长度大于设定的阈值并且使用霍夫曼编码后的数据小于正常编码</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/97052edcbdd6ba997214cde6858ff028.png"></p>
+<p>上图就是一个字符串编码的示例，H就是代表是否采用霍夫曼编码，当然实际情况中，字符串部分几乎不可能是一个字节</p>
+<p>下面是netty实现的字符串编码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">encodeLiteral</span><span class="params">(ByteBuf out, CharSequence name, CharSequence value, HpackUtil.IndexType indexType, <span class="type">int</span> nameIndex)</span> &#123;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">nameIndexValid</span> <span class="operator">=</span> nameIndex != -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">switch</span> (indexType) &#123;</span><br><span class="line">        <span class="keyword">case</span> INCREMENTAL:</span><br><span class="line">            encodeInteger(out, <span class="number">64</span>, <span class="number">6</span>, nameIndexValid ? nameIndex : <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NONE:</span><br><span class="line">            encodeInteger(out, <span class="number">0</span>, <span class="number">4</span>, nameIndexValid ? nameIndex : <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> NEVER:</span><br><span class="line">            encodeInteger(out, <span class="number">16</span>, <span class="number">4</span>, nameIndexValid ? nameIndex : <span class="number">0</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;should not reach here&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!nameIndexValid) &#123;</span><br><span class="line">        <span class="built_in">this</span>.encodeStringLiteral(out, name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">this</span>.encodeStringLiteral(out, value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">encodeStringLiteral</span><span class="params">(ByteBuf out, CharSequence string)</span> &#123;</span><br><span class="line">    <span class="type">int</span> huffmanLength;</span><br><span class="line">    <span class="keyword">if</span> (string.length() &gt;= <span class="built_in">this</span>.huffCodeThreshold &amp;&amp; (huffmanLength = <span class="built_in">this</span>.hpackHuffmanEncoder.getEncodedLength(string)) &lt; string.length()) &#123;</span><br><span class="line">        encodeInteger(out, <span class="number">128</span>, <span class="number">7</span>, huffmanLength);</span><br><span class="line">        <span class="built_in">this</span>.hpackHuffmanEncoder.encode(out, string);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        encodeInteger(out, <span class="number">0</span>, <span class="number">7</span>, string.length());</span><br><span class="line">        <span class="keyword">if</span> (string <span class="keyword">instanceof</span> AsciiString) &#123;</span><br><span class="line">            <span class="type">AsciiString</span> <span class="variable">asciiString</span> <span class="operator">=</span> (AsciiString)string;</span><br><span class="line">            out.writeBytes(asciiString.array(), asciiString.arrayOffset(), asciiString.length());</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            out.writeCharSequence(string, CharsetUtil.ISO_8859_1);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="http2-header不同情况"><a href="#http2-header不同情况" class="headerlink" title="http2 header不同情况"></a>http2 header不同情况</h1><h2 id="header索引"><a href="#header索引" class="headerlink" title="header索引"></a>header索引</h2><p>当header的name和value都有索引的情况下，只需要传递一个数值即可，这种情况数值编码的N为7，并且最高位位1</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/498be7e80c8432cb708a994f2cb5dc2c.png"></p>
+<h2 id="header增量索引"><a href="#header增量索引" class="headerlink" title="header增量索引"></a>header增量索引</h2><h3 id="header-name有索引"><a href="#header-name有索引" class="headerlink" title="header name有索引"></a>header name有索引</h3><p>在header name有索引的情况下，那么name就由索引值代替，即直接用数值编码，而value则使用字符串编码，由于是增量的，需要标明该header需要添加到动态表，这种情况下name的数值编码的N为6，最高的两位为01</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/297295a7854f4311518772893e630da4.png"></p>
+<h3 id="header-name无索引"><a href="#header-name无索引" class="headerlink" title="header name无索引"></a>header name无索引</h3><p>在header name无索引的情况下，比如自己自定义了一个header，那么name和value都需要使用字符串编码，由于是增量的，需要标明该header需要添加到动态表，这种情况下该header的第一个字节用于标识，和name有索引的情况一样，字节的最高两位为01，但是后6位为全为0，这个字节后面跟上name和value的字符串编码</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/5c27fa83af36b5529aa0f2b4fef9432e.png"></p>
+<h2 id="header非增量索引"><a href="#header非增量索引" class="headerlink" title="header非增量索引"></a>header非增量索引</h2><p>非增量索引有两个状态，none和never，这两个状态都不会将索引添加到动态表</p>
+<h3 id="header-name有索引-1"><a href="#header-name有索引-1" class="headerlink" title="header name有索引"></a>header name有索引</h3><p>在header name有索引的情况下，那么name就由索引值代替，即直接用数值编码，而value则使用字符串编码，由于是非增量的，表明该header不添加到动态表，这种情况下name的数值编码的N为4，最高的四位为0000（none）和0001（never）</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/66dcaf4c6532b576d82c1b5c7f78f36e.png"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/a9c8c2b5ec6727f253b1663a1f88b4f4.png"></p>
+<h3 id="header-name无索引-1"><a href="#header-name无索引-1" class="headerlink" title="header name无索引"></a>header name无索引</h3><p>在header name无索引的情况下，比如自己自定义了一个header，那么name和value都需要使用字符串编码，由于是非增量的，表明该header不添加到动态表，这种情况下该header的第一个字节用于标识，和name有索引的情况一样，字节的最高的四位为0000（none）和0001（never），但是后4位为全为0，这个字节后面跟上name和value的字符串编码</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/69188206759dc1ae42acae46da134b68.png"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/6d58cef2c30f3ad4a52b73beeffffaba.png"></p>
+<h2 id="更新动态表大小"><a href="#更新动态表大小" class="headerlink" title="更新动态表大小"></a>更新动态表大小</h2><p>除了在Setting 帧中设置SETTINGS_HEADER_TABLE_SIZE，http2 header还可以通过传递一个数值通知更新动态表大小，这个数值的N为7，最高的三位为001，用于标识该数值用于更新动态表表大小</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/c73ec8d768456a2e77c63b89a874a51f.png"></p>
+<h2 id="图解"><a href="#图解" class="headerlink" title="图解"></a>图解</h2><p>下面是不同情况的简单图解，图中所有情况对应的数值编码的N为除最高几位标识符以外的位数，基本文字介绍</p>
+<ol>
+<li>索引：指http2 header的name和value有完整的索引</li>
+<li>name有索引的增量索引：指http2 header的name有索引，但是value没有索引，会将该header添加到动态表</li>
+<li>name无索引的增量索引：指http2 header的name无索引，并且value没有索引，会将该header添加到动态表</li>
+<li>name有索引的非增量索引：指http2 header的name有索引，但是value没有索引，不将该header添加到动态表</li>
+<li>name无索引的非增量索引：指http2 header的name无索引，并且value没有索引，不将该header添加到动态表</li>
+<li>incremental：http2 header的索引类型，代表增量索引</li>
+<li>none：http2 header的索引类型，代表无索引</li>
+<li>never：http2 header的索引类型，代表不使用索引</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/4076ddccb6ab773e2fb29969a53b3857.jpeg"></p>
+<h1 id="netty头部压缩相关方法"><a href="#netty头部压缩相关方法" class="headerlink" title="netty头部压缩相关方法"></a>netty头部压缩相关方法</h1><p>可以结合以下netty实现的http2 header头部压缩解码方法理解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">decode</span><span class="params">(ByteBuf in, Http2HeadersSink sink)</span> <span class="keyword">throws</span> Http2Exception &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">nameLength</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> <span class="variable">valueLength</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">byte</span> <span class="variable">state</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">    <span class="type">boolean</span> <span class="variable">huffmanEncoded</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="type">AsciiString</span> <span class="variable">name</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    HpackUtil.<span class="type">IndexType</span> <span class="variable">indexType</span> <span class="operator">=</span> IndexType.NONE;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(in.isReadable()) &#123;</span><br><span class="line">        <span class="type">byte</span> b;</span><br><span class="line">        HpackHeaderField indexedHeader;</span><br><span class="line">        <span class="keyword">switch</span> (state) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                b = in.readByte();</span><br><span class="line">                <span class="keyword">if</span> (<span class="built_in">this</span>.maxDynamicTableSizeChangeRequired &amp;&amp; (b &amp; <span class="number">224</span>) != <span class="number">32</span>) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> MAX_DYNAMIC_TABLE_SIZE_CHANGE_REQUIRED;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (b &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                    index = b &amp; <span class="number">127</span>;</span><br><span class="line">                    <span class="keyword">switch</span> (index) &#123;</span><br><span class="line">                        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                            <span class="keyword">throw</span> DECODE_ILLEGAL_INDEX_VALUE;</span><br><span class="line">                        <span class="keyword">case</span> <span class="number">127</span>:</span><br><span class="line">                            state = <span class="number">1</span>;</span><br><span class="line">                            <span class="keyword">continue</span>;</span><br><span class="line">                        <span class="keyword">default</span>:</span><br><span class="line">                            indexedHeader = <span class="built_in">this</span>.getIndexedHeader(index);</span><br><span class="line">                            sink.appendToHeaderList((AsciiString)indexedHeader.name, (AsciiString)indexedHeader.value);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> ((b &amp; <span class="number">64</span>) == <span class="number">64</span>) &#123;</span><br><span class="line">                    indexType = IndexType.INCREMENTAL;</span><br><span class="line">                    index = b &amp; <span class="number">63</span>;</span><br><span class="line">                    <span class="keyword">switch</span> (index) &#123;</span><br><span class="line">                        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                            state = <span class="number">3</span>;</span><br><span class="line">                            <span class="keyword">continue</span>;</span><br><span class="line">                        <span class="keyword">case</span> <span class="number">63</span>:</span><br><span class="line">                            state = <span class="number">2</span>;</span><br><span class="line">                            <span class="keyword">continue</span>;</span><br><span class="line">                        <span class="keyword">default</span>:</span><br><span class="line">                            name = <span class="built_in">this</span>.readName(index);</span><br><span class="line">                            nameLength = name.length();</span><br><span class="line">                            state = <span class="number">6</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> ((b &amp; <span class="number">32</span>) == <span class="number">32</span>) &#123;</span><br><span class="line">                        <span class="keyword">throw</span> Http2Exception.connectionError(Http2Error.COMPRESSION_ERROR, <span class="string">&quot;Dynamic table size update must happen at the beginning of the header block&quot;</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]);</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    indexType = (b &amp; <span class="number">16</span>) == <span class="number">16</span> ? IndexType.NEVER : IndexType.NONE;</span><br><span class="line">                    index = b &amp; <span class="number">15</span>;</span><br><span class="line">                    <span class="keyword">switch</span> (index) &#123;</span><br><span class="line">                        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                            state = <span class="number">3</span>;</span><br><span class="line">                            <span class="keyword">continue</span>;</span><br><span class="line">                        <span class="keyword">case</span> <span class="number">15</span>:</span><br><span class="line">                            state = <span class="number">2</span>;</span><br><span class="line">                            <span class="keyword">continue</span>;</span><br><span class="line">                        <span class="keyword">default</span>:</span><br><span class="line">                            name = <span class="built_in">this</span>.readName(index);</span><br><span class="line">                            nameLength = name.length();</span><br><span class="line">                            state = <span class="number">6</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">                indexedHeader = <span class="built_in">this</span>.getIndexedHeader(decodeULE128(in, index));</span><br><span class="line">                sink.appendToHeaderList((AsciiString)indexedHeader.name, (AsciiString)indexedHeader.value);</span><br><span class="line">                state = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">                name = <span class="built_in">this</span>.readName(decodeULE128(in, index));</span><br><span class="line">                nameLength = name.length();</span><br><span class="line">                state = <span class="number">6</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">                b = in.readByte();</span><br><span class="line">                huffmanEncoded = (b &amp; <span class="number">128</span>) == <span class="number">128</span>;</span><br><span class="line">                index = b &amp; <span class="number">127</span>;</span><br><span class="line">                <span class="keyword">if</span> (index == <span class="number">127</span>) &#123;</span><br><span class="line">                    state = <span class="number">4</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    nameLength = index;</span><br><span class="line">                    state = <span class="number">5</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">                nameLength = decodeULE128(in, index);</span><br><span class="line">                state = <span class="number">5</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">5</span>:</span><br><span class="line">                <span class="keyword">if</span> (in.readableBytes() &lt; nameLength) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> notEnoughDataException(in);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                name = <span class="built_in">this</span>.readStringLiteral(in, nameLength, huffmanEncoded);</span><br><span class="line">                state = <span class="number">6</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">6</span>:</span><br><span class="line">                b = in.readByte();</span><br><span class="line">                huffmanEncoded = (b &amp; <span class="number">128</span>) == <span class="number">128</span>;</span><br><span class="line">                index = b &amp; <span class="number">127</span>;</span><br><span class="line">                <span class="keyword">switch</span> (index) &#123;</span><br><span class="line">                    <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                        <span class="built_in">this</span>.insertHeader(sink, name, AsciiString.EMPTY_STRING, indexType);</span><br><span class="line">                        state = <span class="number">0</span>;</span><br><span class="line">                        <span class="keyword">continue</span>;</span><br><span class="line">                    <span class="keyword">case</span> <span class="number">127</span>:</span><br><span class="line">                        state = <span class="number">7</span>;</span><br><span class="line">                        <span class="keyword">continue</span>;</span><br><span class="line">                    <span class="keyword">default</span>:</span><br><span class="line">                        valueLength = index;</span><br><span class="line">                        state = <span class="number">8</span>;</span><br><span class="line">                        <span class="keyword">continue</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">7</span>:</span><br><span class="line">                valueLength = decodeULE128(in, index);</span><br><span class="line">                state = <span class="number">8</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="number">8</span>:</span><br><span class="line">                <span class="keyword">if</span> (in.readableBytes() &lt; valueLength) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> notEnoughDataException(in);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="type">AsciiString</span> <span class="variable">value</span> <span class="operator">=</span> <span class="built_in">this</span>.readStringLiteral(in, valueLength, huffmanEncoded);</span><br><span class="line">                <span class="built_in">this</span>.insertHeader(sink, name, value, indexType);</span><br><span class="line">                state = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&quot;should not reach here state: &quot;</span> + state);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (state != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> Http2Exception.connectionError(Http2Error.COMPRESSION_ERROR, <span class="string">&quot;Incomplete header block fragment.&quot;</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>netty http2头部压缩是HpackEncoder类实现的，它实现了hpack算法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">encodeHeader</span><span class="params">(ByteBuf out, CharSequence name, CharSequence value, <span class="type">boolean</span> sensitive, <span class="type">long</span> headerSize)</span> &#123;</span><br><span class="line">    <span class="type">int</span> nameIndex;</span><br><span class="line">    <span class="keyword">if</span> (sensitive) &#123;</span><br><span class="line">        nameIndex = <span class="built_in">this</span>.getNameIndex(name);</span><br><span class="line">        <span class="built_in">this</span>.encodeLiteral(out, name, value, IndexType.NEVER, nameIndex);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="type">int</span> staticTableIndex;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.maxHeaderTableSize == <span class="number">0L</span>) &#123;</span><br><span class="line">            nameIndex = HpackStaticTable.getIndexInsensitive(name, value);</span><br><span class="line">            <span class="keyword">if</span> (nameIndex == -<span class="number">1</span>) &#123;</span><br><span class="line">                staticTableIndex = HpackStaticTable.getIndex(name);</span><br><span class="line">                <span class="built_in">this</span>.encodeLiteral(out, name, value, IndexType.NONE, staticTableIndex);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                encodeInteger(out, <span class="number">128</span>, <span class="number">7</span>, nameIndex);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (headerSize &gt; <span class="built_in">this</span>.maxHeaderTableSize) &#123;</span><br><span class="line">            nameIndex = <span class="built_in">this</span>.getNameIndex(name);</span><br><span class="line">            <span class="built_in">this</span>.encodeLiteral(out, name, value, IndexType.NONE, nameIndex);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="type">HeaderEntry</span> <span class="variable">headerField</span> <span class="operator">=</span> <span class="built_in">this</span>.getEntryInsensitive(name, value);</span><br><span class="line">            <span class="keyword">if</span> (headerField != <span class="literal">null</span>) &#123;</span><br><span class="line">                staticTableIndex = <span class="built_in">this</span>.getIndex(headerField.index) + HpackStaticTable.length;</span><br><span class="line">                encodeInteger(out, <span class="number">128</span>, <span class="number">7</span>, staticTableIndex);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                staticTableIndex = HpackStaticTable.getIndexInsensitive(name, value);</span><br><span class="line">                <span class="keyword">if</span> (staticTableIndex != -<span class="number">1</span>) &#123;</span><br><span class="line">                    encodeInteger(out, <span class="number">128</span>, <span class="number">7</span>, staticTableIndex);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="built_in">this</span>.ensureCapacity(headerSize);</span><br><span class="line">                    <span class="built_in">this</span>.encodeLiteral(out, name, value, IndexType.INCREMENTAL, <span class="built_in">this</span>.getNameIndex(name));</span><br><span class="line">                    <span class="built_in">this</span>.add(name, value, headerSize);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">int</span> <span class="title function_">getIndexInsensitive</span><span class="params">(CharSequence name, CharSequence value)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> getIndex(name);</span><br><span class="line">    <span class="keyword">if</span> (index == -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="type">HpackHeaderField</span> <span class="variable">entry</span> <span class="operator">=</span> getEntry(index);</span><br><span class="line">        <span class="keyword">if</span> (HpackUtil.equalsVariableTime(value, entry.value)) &#123;</span><br><span class="line">            <span class="keyword">return</span> index;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            ++index;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span>(index &lt;= MAX_SAME_NAME_FIELD_INDEX) &#123;</span><br><span class="line">                entry = getEntry(index);</span><br><span class="line">                <span class="keyword">if</span> (!HpackUtil.equalsVariableTime(name, entry.name)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (HpackUtil.equalsVariableTime(value, entry.value)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> index;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                ++index;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这两个方法简单讲就是通过header name和header value获取索引值，如果获取成功，直接返回索引值，可以极大的减少数据大小</p>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/Spring%20Boot%E6%95%B4%E5%90%88RabbitMQ/">Spring Boot整合RabbitMQ</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/Nginx%E9%95%BF%E8%BF%9E%E6%8E%A5/">Nginx长连接</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BC%A0%E9%80%92%E6%95%B0%E6%8D%AE%E7%9A%84%E5%BD%A2%E5%BC%8F"><span class="toc-text">传递数据的形式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E5%80%BC"><span class="toc-text">数值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-text">字符串</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#http2-header%E4%B8%8D%E5%90%8C%E6%83%85%E5%86%B5"><span class="toc-text">http2 header不同情况</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#header%E7%B4%A2%E5%BC%95"><span class="toc-text">header索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#header%E5%A2%9E%E9%87%8F%E7%B4%A2%E5%BC%95"><span class="toc-text">header增量索引</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#header-name%E6%9C%89%E7%B4%A2%E5%BC%95"><span class="toc-text">header name有索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#header-name%E6%97%A0%E7%B4%A2%E5%BC%95"><span class="toc-text">header name无索引</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#header%E9%9D%9E%E5%A2%9E%E9%87%8F%E7%B4%A2%E5%BC%95"><span class="toc-text">header非增量索引</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#header-name%E6%9C%89%E7%B4%A2%E5%BC%95-1"><span class="toc-text">header name有索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#header-name%E6%97%A0%E7%B4%A2%E5%BC%95-1"><span class="toc-text">header name无索引</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E5%8A%A8%E6%80%81%E8%A1%A8%E5%A4%A7%E5%B0%8F"><span class="toc-text">更新动态表大小</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE%E8%A7%A3"><span class="toc-text">图解</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#netty%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%9B%B8%E5%85%B3%E6%96%B9%E6%B3%95"><span class="toc-text">netty头部压缩相关方法</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

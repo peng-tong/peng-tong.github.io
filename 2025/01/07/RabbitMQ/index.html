@@ -1,0 +1,754 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>RabbitMQ - 求知之旅</title>
+
+  
+    <meta name="description" content="官网RabbitMQ: One broker to queue them all | RabbitMQ GitHub - rabbitmq&#x2F;rabbitmq-website: RabbitMQ website 消息队列的意义 解耦：如果使用传统的服务调用，生产者需要通过调用消费者的接口达到将数据传送给消费者的目的，但是如果当一台消费者不需要该数据了或者有另外一台机器也需要该数据，则需要修">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RabbitMQ">
+<meta property="og:url" content="http://example.com/2025/01/07/RabbitMQ/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="官网RabbitMQ: One broker to queue them all | RabbitMQ GitHub - rabbitmq&#x2F;rabbitmq-website: RabbitMQ website 消息队列的意义 解耦：如果使用传统的服务调用，生产者需要通过调用消费者的接口达到将数据传送给消费者的目的，但是如果当一台消费者不需要该数据了或者有另外一台机器也需要该数据，则需要修">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/27ed07cef47b8f32ffaed046395870e3.png">
+<meta property="og:image" content="http://example.com/images/23f4dab00cc2a6ee2faa47ef42859ff5.png">
+<meta property="og:image" content="http://example.com/images/80afc8738eefcf6b9e1261056ee156b6.png">
+<meta property="og:image" content="http://example.com/images/d711f3820ee179e48e9d2fb520542cc3.png">
+<meta property="og:image" content="http://example.com/images/684b27db44508d0a2066833b6da4474c.webp">
+<meta property="og:image" content="http://example.com/images/db92e6186a1e88733df6d683cf6878d6.png">
+<meta property="og:image" content="http://example.com/images/ef69373978f1f5eacc7b62671ea25cf2.png">
+<meta property="og:image" content="http://example.com/images/7849c1ac418ebc255bf8c6a7304b3956.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.785Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.020Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/27ed07cef47b8f32ffaed046395870e3.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/RabbitMQ/">RabbitMQ</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.785Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.020Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>RabbitMQ</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h1><p><a target="_blank" rel="noopener" href="https://www.rabbitmq.com/">RabbitMQ: One broker to queue them all | RabbitMQ</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/rabbitmq/rabbitmq-website">GitHub - rabbitmq&#x2F;rabbitmq-website: RabbitMQ website</a></p>
+<h1 id="消息队列的意义"><a href="#消息队列的意义" class="headerlink" title="消息队列的意义"></a>消息队列的意义</h1><ol>
+<li>解耦：如果使用传统的服务调用，生产者需要通过调用消费者的接口达到将数据传送给消费者的目的，但是如果当一台消费者不需要该数据了或者有另外一台机器也需要该数据，则需要修改生产者内部代码，耦合性太强，如果使用消息队列，生产者只需要将数据放在队列中，而无需关心谁来读取这条数据</li>
+<li>异步：如果服务A完成某个业务功能需要通过陆续调用服务B，C，D的接口才能完成，而服务A不想因为调用服务B，C，D的接口耽误下面的业务的进行，这个时候可以使用消息队列，将消息放入队列中，然后继续往下执行代码</li>
+<li>削峰填谷：如果某一时段服务A请求量巨大可能会导致服务A奔溃，这种情况可以先将请求放入队列中而不需要让服务A一次性处理所有请求</li>
+</ol>
+<h1 id="RabbitMQ安装"><a href="#RabbitMQ安装" class="headerlink" title="RabbitMQ安装"></a>RabbitMQ安装</h1><p>rabbitmq安装首先需要安装erlang，而且是有版本要求的，可以通过<a target="_blank" rel="noopener" href="https://www.rabbitmq.com/docs/which-erlang">https://www.rabbitmq.com/docs/which-erlang</a>查看具体版本对应关系</p>
+<h2 id="安装erlang"><a href="#安装erlang" class="headerlink" title="安装erlang"></a>安装erlang</h2><ol>
+<li>进入<a target="_blank" rel="noopener" href="https://erlang.org/download/">https://erlang.org/download/</a>找到对应的系统和版本下载安装</li>
+<li>配置环境变量                                        <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/27ed07cef47b8f32ffaed046395870e3.png"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/23f4dab00cc2a6ee2faa47ef42859ff5.png"></li>
+<li>测试                                                     <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/80afc8738eefcf6b9e1261056ee156b6.png"></li>
+</ol>
+<h2 id="安装RabbitMQ"><a href="#安装RabbitMQ" class="headerlink" title="安装RabbitMQ"></a>安装RabbitMQ</h2><ol>
+<li>进入<a target="_blank" rel="noopener" href="https://github.com/rabbitmq/rabbitmq-server/releases">https://github.com/rabbitmq/rabbitmq-server/releases</a>找到合适的系统和版本下载安装</li>
+<li>启动rabbitmq                                                                            <img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/d711f3820ee179e48e9d2fb520542cc3.png"></li>
+</ol>
+<h2 id="RabbitMQ配置"><a href="#RabbitMQ配置" class="headerlink" title="RabbitMQ配置"></a>RabbitMQ配置</h2><p>rabbitmq配置文件的地址有点特殊，不像其他中间件，rabbitmq的配置文件是根据系统环境变量确定的，在未配置的情况下使用默认配置<a target="_blank" rel="noopener" href="https://www.rabbitmq.com/docs/configure#config-location">rabbitmq配置默认地址</a>，rabbitmq配置可选项以及默认配置参考<a target="_blank" rel="noopener" href="https://www.rabbitmq.com/docs/configure#example-config">rabbitmq配置可选项以及默认配置</a></p>
+<h2 id="RabbitMQ可视化插件"><a href="#RabbitMQ可视化插件" class="headerlink" title="RabbitMQ可视化插件"></a>RabbitMQ可视化插件</h2><p><font style="color:rgb(44, 44, 54);">1. 列出可用插件</font></p>
+<p><font style="color:rgb(44, 44, 54);">首先，你可以查看已安装但未启用以及已启用的所有插件。在命令行中，进入RabbitMQ的sbin目录（例如，</font><font style="color:rgb(44, 44, 54);">cd &#x2F;usr&#x2F;sbin</font><font style="color:rgb(44, 44, 54);"> 或者根据你的安装路径），然后运行：</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rabbitmq-plugins list</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(44, 44, 54);">这将列出所有插件的状态，标记为 </font><font style="color:rgb(44, 44, 54);">[E*]</font><font style="color:rgb(44, 44, 54);"> 的是已启用的插件，而 </font><font style="color:rgb(44, 44, 54);">[ ]</font><font style="color:rgb(44, 44, 54);"> 或其他表示未启用。</font></p>
+<p><font style="color:rgb(44, 44, 54);">2. 启用插件</font></p>
+<p><font style="color:rgb(44, 44, 54);">要启用一个插件，使用</font><font style="color:rgb(44, 44, 54);">rabbitmq-plugins enable</font><font style="color:rgb(44, 44, 54);">命令后面跟插件的名字。要启用RabbitMQ Management插件（提供了Web管理界面），可以运行：</font></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rabbitmq-plugins enable rabbitmq_management</span><br></pre></td></tr></table></figure>
+
+<p><font style="color:rgb(44, 44, 54);">3. 重启RabbitMQ服务</font></p>
+<p><font style="color:rgb(44, 44, 54);">可视化插件在启用后需要重启RabbitMQ服务才能生效。访问默认为地址为&lt;</font><font style="color:rgb(57, 58, 52);background-color:rgb(246, 248, 250);">ip</font><font style="color:rgb(44, 44, 54);">&gt;:15672</font></p>
+<h1 id="RabbitMQ结构"><a href="#RabbitMQ结构" class="headerlink" title="RabbitMQ结构"></a>RabbitMQ结构</h1><p>对于RabbitMQ而言，最关键的东西就是交换机，路由和队列，交换机负责接收生产者的消息，路由负责绑定交换机和队列，队列负责存储消息等待消费者消费<br><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/684b27db44508d0a2066833b6da4474c.webp"></p>
+<h1 id="消息顺序性"><a href="#消息顺序性" class="headerlink" title="消息顺序性"></a>消息顺序性</h1><p>从RabbitMQ的结构来看，消息从生产者到消费者的过程中，生产者只能将消息提交给一个Exchange，Exchange可以根据路由将消息发送给一个或多个Queue，Queue只能将消息推送给一个消费者。所以想要实现RabbitMQ消息的顺序性，可以根据全局顺序性和局部顺序性做出不同的调整，这里默认生产者和消费者同步推送和同步消费，异步推送或者异步消费必然会影响顺序性</p>
+<ol>
+<li>全局顺序性：在全局顺序性的情况下，必须要保证每条消息都按照顺序传递，那么只能有一个生产者，一个队列，一个消费者</li>
+<li>局部顺序性：在局部顺序性的情况下，即将消息分类别保证顺序性，则只需要保证同一类别的消息由同一个生产者推送，并且进入同一个队列，并且由同一个消费者消费即可<ol>
+<li>要保证同一类别的消息由同一个生产者推送，第一步很好实现</li>
+<li>要保证同一类别的消息进入同一个队列，可以通过设置Exchange以及合适的路由键，控制同一类消息进入同一个队列</li>
+<li>要保证同一类别的消息由同一个消费者消费，因为队列的一条消息只能推送给一个消费者，多个消费者会造成随机推送，所以对应的队列只能有一个消费者</li>
+</ol>
+</li>
+</ol>
+<h1 id="消息持久化"><a href="#消息持久化" class="headerlink" title="消息持久化"></a>消息持久化</h1><p><strong>消息持久配置</strong></p>
+<p>RabbitMQ持久化涉及到交换机持久化、队列持久化、消息持久化三个部分，RabbitMQ使用<font style="color:rgb(31, 35, 40);">Mnesia数据库存储队列、交换机等元数据，消息由RabbitMQ本身负责持久化</font></p>
+<ol>
+<li><font style="color:rgb(31, 35, 40);">交换机持</font>久化：交换机持久化需要将交换机的durable属性配置为true，在spring-amqp中，可以在交换机构造函数中设置durable属性</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">TopicExchange</span><span class="params">(String name, <span class="type">boolean</span> durable, <span class="type">boolean</span> autoDelete)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>(name, durable, autoDelete);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>队列持久化：队列持久化需要将队列的durable属性配置为true，在spring-amqp中，可以在队列构造函数中设置durable属性</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">Queue</span><span class="params">(String name, <span class="type">boolean</span> durable)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>(name, durable, <span class="literal">false</span>, <span class="literal">false</span>, (Map)<span class="literal">null</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>消息持久化：消息持久化即在发布消息时，需要将消息的deliveryMode属性设置为2，在spring-amqp中，MessageProperties类的deliveryMode属性默认是2，即发送到消息如果不做特殊处理，是默认持久化的</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//这是MessageProperties中的一个静态代码块，用于设置deliveryMode和priority属性</span></span><br><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    DEFAULT_DELIVERY_MODE = MessageDeliveryMode.PERSISTENT;</span><br><span class="line">    DEFAULT_PRIORITY = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">toInt</span><span class="params">(MessageDeliveryMode mode)</span> &#123;</span><br><span class="line">    <span class="keyword">switch</span> (mode) &#123;</span><br><span class="line">        <span class="keyword">case</span> NON_PERSISTENT:</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">case</span> PERSISTENT:</span><br><span class="line">            <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>消息存储文件</strong></p>
+<p><a target="_blank" rel="noopener" href="https://www.rabbitmq.com/docs/persistence-conf">持久化参考链接</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.rabbitmq.com/docs/relocate">路径配置参考链接</a></p>
+<p><strong>经典队列</strong></p>
+<p>以Windows为例，RabbitMQ经典队列消息持久化主要存在于“%RABBITMQ_MNESIA_DIR%\msg_stores\vhosts&lt;vhosts-name&gt;”下面</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/db92e6186a1e88733df6d683cf6878d6.png"></p>
+<p>其中</p>
+<ol>
+<li>msg_store_persistent：存放rabbitmq持久化消息文件，文件名格式为“数字.rdq”，<font style="color:rgb(77, 77, 77);">持久化消息在到达队列是写入磁盘,同时会在内存中保存一份备份,当内存紧张时,消息将会从内存中消除.存储到内存中主要目的是提高一定效率</font></li>
+<li>msg_store_transient：存放rabbitmq非持久化消息文件，文件名格式为“数字.rdq”，<font style="color:rgb(77, 77, 77);">非持久化消息一般只存在内存中,当内存压力大时,将会进行刷盘操作,以缓解内存压力</font></li>
+<li>queues：存放每个队列的消息索引文件，文件名格式为“数字.idx”，自 RabbitMQ 3.5.0 版本起，小消息（内容、属性及 headers 总长度小于特定阈值，默认为 4096 字节）会直接存储在 idx 文件中，而非单独存放在消息存储中。这样可以减少一次磁盘写操作，提高性能。此行为可以通过配置项 queue_index_embed_msgs_below 控制。</li>
+</ol>
+<p>当idx文件中记录的消息被消费时，会被标记，当idx文件记录的所有消息都被消费时，idx文件会被删除，虽然此时idx被删除了，但如果是持久化消息，msg_store_persistent中的rdq文件不会收到影响，即消息本身不会被删除</p>
+<p><strong>仲裁队列</strong></p>
+<p>以Windows为例，RabbitMQ经典队列消息持久化主要存在于<br>“%RABBITMQ_MNESIA_DIR%\quorum&lt;vhosts-name&gt;”下面，与经典队列不同，仲裁队列在存储路径上，不区分虚拟主机，但是如果两个虚拟机创建同一名称的仲裁队列，在路径表现上，名称是不一样的</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/ef69373978f1f5eacc7b62671ea25cf2.png"></p>
+<p>其中</p>
+<ol>
+<li>wal文件，仲裁队列的预写文件，是所有队列共享的文件，它既刷入磁盘也存在于内存中，但是当大小达到阈值时，消息会被写入对应队列的段文件中用来释放内存，所以段文件不存在内存中，这里的阈值可以通过raft.wal_max_size_bytes配置控制，默认值是64MiB<br><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/7849c1ac418ebc255bf8c6a7304b3956.png"></li>
+<li>segment文件：上面提到的段文件，存放在每个队列对应的文件夹当中，名称是”数字.segment”，有消息条数据限制，超过限制后，在原先文件名加一生成一个新文件，这个限制可以通过raft.segment_max_entries控制，默认值是4096，最大不能超过65535</li>
+</ol>
+<h1 id="消息模式"><a href="#消息模式" class="headerlink" title="消息模式"></a>消息模式</h1><p><a target="_blank" rel="noopener" href="https://www.rabbitmq.com/tutorials#queue-tutorials">参考文档</a></p>
+<ol>
+<li><font style="color:rgb(44, 44, 54);">工作模式：直接将消息投递到队列，这种方式是通过逻辑交换机实现的，逻辑交换机是RabbitMQ为每个新创建的队列自动绑定的一个特殊交换机。每个队列在创建时自动绑定到默认交换机上。这个绑定的Routing Key就是队列的名称。如果生产者发送消息时不指定Exchange（或者明确指定为默认交换机），并且提供了Routing Key，那么RabbitMQ会将这个Routing Key视为队列名，并尝试将消息直接发送到对应的队列中。</font></li>
+<li><font style="color:rgb(44, 44, 54);">发布订阅模式：将一个消息投递到多个队列，进而实现将同一条消息投递到多个消费者，这种方式是通过扇形交换机实现的。扇形交换机会忽略路由键，将接收到的消息广播到与之绑定的所有队列。这种类型的交换机适用于发布&#x2F;订阅模式，其中消息需要被多个消费者接收。</font></li>
+<li><font style="color:rgb(44, 44, 54);">直连模式：可以通过指定routeKey将消息投递到特定的一个或多个队列，进而实现将同一条消息投递到多个消费者，这种方式是通过直连交换机实现的，它在扇形交换机的基础上多了一层选择</font></li>
+<li><font style="color:rgb(44, 44, 54);">路由模式：在直连模式的基础上实现了更加的灵活的方式，routeKey支持使用通配符（*和#），允许更灵活的路由规则</font></li>
+</ol>
+<h1 id="消费模式"><a href="#消费模式" class="headerlink" title="消费模式"></a>消费模式</h1><p><font style="color:rgb(44, 44, 54);">RabbitMQ的消费模式主要包括两种：推模式（Push）和拉模式（Pull）。 </font></p>
+<ol>
+<li><font style="color:rgba(0, 0, 0, 0.85);">推模式（Push）：</font><font style="color:rgb(44, 44, 54);">在推模式中，RabbitMQ会主动将消息推送给消费者。这一过程是通过调用</font><font style="color:rgb(44, 44, 54);">basic.Consume</font><font style="color:rgb(44, 44, 54);">方法实现的。当消费者调用此方法时，它会订阅队列，此后RabbitMQ就会开始向消费者推送消息。推送的消息数量可以受到</font><font style="color:rgb(44, 44, 54);">Basic.Qos</font><font style="color:rgb(44, 44, 54);">（Quality of Service）设置的限制，用来控制消费者预取的消息数量，防止消费者处理能力不足时消息堆积。推模式简化了消息处理流程，适用于大多数需要高效实时处理消息的场景。在spring-amqp中通过channel.basicConsume方法</font></li>
+<li><font style="color:rgba(0, 0, 0, 0.85);">拉模式（Pull）：</font><font style="color:rgb(44, 44, 54);">拉模式则是消费者主动从RabbitMQ拉取消息的过程，通常通过调用</font><font style="color:rgb(44, 44, 54);">basic.Get</font><font style="color:rgb(44, 44, 54);">方法来实现。在拉模式下，消费者决定何时从队列中请求消息，每次请求通常只获取一条消息。尽管可以循环调用</font><font style="color:rgb(44, 44, 54);">basic.Get</font><font style="color:rgb(44, 44, 54);">来模拟持续接收消息的行为，但这并不推荐，因为它会显著降低RabbitMQ的性能。拉模式给予消费者更多的控制权，但在大多数场景下不如推模式高效。在spring-amqp中通过channel.basicGet方法</font></li>
+</ol>
+<p><font style="color:rgb(44, 44, 54);">选择推还是拉模式主要取决于应用的需求：</font></p>
+<ul>
+<li><strong><font style="color:rgb(44, 44, 54);">推模式</font></strong><font style="color:rgb(44, 44, 54);">适用于需要实时处理消息且对消息处理有较高效率要求的应用场景，因为它可以减少消息处理的延迟。</font></li>
+<li><strong><font style="color:rgb(44, 44, 54);">拉模式</font></strong><font style="color:rgb(44, 44, 54);">适用于那些消费者需要更多控制权，比如按需处理消息，或者资源有限，希望在处理完一条消息后再获取下一条的场景。</font></li>
+</ul>
+<p><font style="color:rgb(44, 44, 54);">在实际应用中，推模式更为常见，因为它能更好地利用消息队列的异步处理能力和提高系统的响应速度。然而，在某些特殊需求下，拉模式也能提供更加灵活的控制选项。</font></p>
+<p><font style="color:rgb(44, 44, 54);">此外，在Kafka、RocketMQ、RabbitMQ中，只有RabbitMQ真正实现了推模式，RocketMQ的推模式实际上还是通过拉模式实现的，而Kafka没有推模式，这一点让RabbitMQ在低延迟方面有优势</font></p>
+<h1 id="消息过滤"><a href="#消息过滤" class="headerlink" title="消息过滤"></a>消息过滤</h1><p><font style="color:rgb(44, 44, 54);">RabbitMQ 提供了几种消息过滤机制来帮助消费者精确订阅他们所需要的数据。以下是一些主要的消息过滤方式：</font></p>
+<ol>
+<li><strong><font style="color:rgb(44, 44, 54);">基于路由键（Routing Key）的过滤</font></strong><font style="color:rgb(44, 44, 54);">： RabbitMQ 中的基本消息路由是通过交换机（Exchange）和路由键实现的。生产者发送消息到交换机时会指定一个路由键，而消费者通过队列与交换机绑定时也会指定一个或多个绑定键（Binding Key）。交换机会根据路由键和绑定键的精确匹配将消息路由到对应的队列。这意味着，消费者可以通过设置合适的绑定键来过滤掉不感兴趣的消息。</font></li>
+<li><strong><font style="color:rgb(44, 44, 54);">基于消息属性的过滤</font></strong><font style="color:rgb(44, 44, 54);">： RabbitMQ 支持消息属性（Message Properties），这些属性可以是发布消息时自定义的元数据。虽然RabbitMQ本身不直接提供基于消息属性的过滤，但可以通过插件或消费者逻辑来实现。例如，可以编写一个插件或消费者代码，检查消息的属性并据此决定是否接收处理消息。</font></li>
+<li><strong><font style="color:rgb(44, 44, 54);">Topic Exchange 的模式匹配</font></strong><font style="color:rgb(44, 44, 54);">： 使用</font><font style="color:rgb(44, 44, 54);">topic</font><font style="color:rgb(44, 44, 54);">类型的交换机可以实现更复杂的基于模式的过滤。在这种模式下，绑定键和路由键可以包含通配符（</font><font style="color:rgb(44, 44, 54);"><em></font><font style="color:rgb(44, 44, 54);">和</font><font style="color:rgb(44, 44, 54);">#</font><font style="color:rgb(44, 44, 54);">），允许更灵活的匹配规则。例如，</font><font style="color:rgb(44, 44, 54);">#.orange.</em></font><font style="color:rgb(44, 44, 54);">可以匹配所有包含</font><font style="color:rgb(44, 44, 54);">.orange.</font><font style="color:rgb(44, 44, 54);">的消息，而</font><font style="color:rgb(44, 44, 54);">lazy.#</font><font style="color:rgb(44, 44, 54);">可以匹配所有以</font><font style="color:rgb(44, 44, 54);">lazy.</font><font style="color:rgb(44, 44, 54);">开头的消息。</font></li>
+<li><strong><font style="color:rgb(44, 44, 54);">消息选择器（Message Selectors）</font></strong><font style="color:rgb(44, 44, 54);">： 虽然不是RabbitMQ原生支持的功能，但可以通过AMQP协议的消息选择器功能在消息消费时根据消息内容的属性进行过滤。不过，这种方式相比其他过滤机制来说效率较低，因为需要消费者逐一检查消息内容。</font></li>
+<li><strong><font style="color:rgb(44, 44, 54);">插件辅助过滤</font></strong><font style="color:rgb(44, 44, 54);">： 有时候，为了实现更高级的过滤逻辑，可以使用第三方插件，比如消息去重插件或其他自定义插件，这些插件可以提供额外的过滤功能。</font></li>
+</ol>
+<p><font style="color:rgb(44, 44, 54);">在设计消息过滤策略时，需要平衡过滤的精确度和系统的性能，同时也要考虑易用性和可维护性。根据业务需求选择最合适的过滤方式是至关重要的。</font></p>
+<h1 id="消息丢失"><a href="#消息丢失" class="headerlink" title="消息丢失"></a>消息丢失</h1><p>消息丢失主要从生产者、MQ、消费者三者考虑消息丢失的情况</p>
+<p>生产者解决消息丢失问题主要有两种方式</p>
+<ul>
+<li><font style="color:rgb(44, 44, 54);">事务：生产者发送数据之前开启 RabbitMQ 事务channel.txSelect，然后发送消 息，如果消息没有成功被 RabbitMQ 接收到，那么生产者会收到异常报错，此时就可以回滚事务channel.txRollback，然后重试发送消息；如果收到了消息，那么可以提交事务channel.txCommit，类似我们数据库数据库事务机制。</font></li>
+<li><font style="color:rgb(44, 44, 54);">confirm模式：用于确认消息是否已经成功到达了交换机（Exchange），也可以理解为确认消息是否成功到达MQ。生产者实例可以在发送消息前可以开启confirm模式，打开confirm模式后，每个被投递到这个channel的消息都会分配一个唯一ID标识，当消息写入RabbitMQ之后，RabbitMQ会回传一个ack消息给生产者，ack消息包含消息的唯一ID标识，这样生产者就能知道消息被准确收到；如果RabbitMQ因为自身内部错误导致消息丢失，就会回传一个nack消息给生产者，这样就会调用一个我们处理nack消息的回调函数，在这个回调函数中我们可以写一些消息重发逻辑。<br></font><font style="color:rgb(44, 44, 54);">除了confirm还有一个renturn模式，用于确认消息是否从交换机成功到达队列，主要用于检查消息路由失败，如路由键错误或队列不存在等情况。renturn模式检查的是MQ内部的问题</font></li>
+</ul>
+<p>MQ解决消息丢失问题主要通过持久化解决</p>
+<ul>
+<li>无论是生产端也好还是消费端也好，在声明queue（队列）以及exchange（交换机）的时候将它们设置为可持久化的。除此之外，在生产者发送消息时，将消息的deliveryMode设置成持久化的，这样RabbitMQ就会将消息持久化到磁盘上，即使MQ宕机了，重启后也能从磁盘上恢复消息数据。这种方案一般是配合生产者的confirm模式共同使用，只有当消息被持久化到磁盘后，MQ才会发送ack消息通知生产端。如果需要进一步的保障，还可以使用集群、镜像队列、仲裁队列等</li>
+</ul>
+<p>消费者解决消息丢失问题主要通过ack机制解决</p>
+<ul>
+<li>默认的消息确认机制是消费者一收到消息，就会回一个ack消息给MQ，并且MQ一收到消费端的ack消息，就会将消息从内存或磁盘中移除。我们可以在消费者订阅队列时，关闭autoAck，关闭后消费端不会一收到消息会回ack，而是在业务处理完后，需要手动调用方法发送ack消息给MQ：channel.basicAck()，MQ也会一直等待直到消费端调用basicAck，回复确认消息后，才会将消息从内存或磁盘中移除。</li>
+</ul>
+<h1 id="集群架构"><a href="#集群架构" class="headerlink" title="集群架构"></a>集群架构</h1><p><a target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-5eawf/st01q1/gico0cm3htuadxri">RabbiMQ集群</a></p>
+<h1 id="消息积压"><a href="#消息积压" class="headerlink" title="消息积压"></a>消息积压</h1><p><font style="color:rgb(44, 44, 54);">处理 RabbitMQ 中的消息积压可以从很多方面考虑解决问题，比如在代码层面优化消费者代码逻辑，提升消费速度，或者直接提升硬件资源，提升消费速度，从RabbitMQ来考虑，可以有以下几个方法</font></p>
+<ol>
+<li><strong><font style="color:rgb(44, 44, 54);">增加消费者数量</font></strong><font style="color:rgb(44, 44, 54);">：</font><ul>
+<li><font style="color:rgb(44, 44, 54);">基于RabbitMQ一个队列可以负载多个消费者的特性，可以通过增加更多的消费者来提高消息的处理速度，从而减少队列中的积压。确保你的消费者程序能够并行处理消息。</font></li>
+</ul>
+</li>
+<li><strong><font style="color:rgb(44, 44, 54);">使用优先级队列</font></strong><font style="color:rgb(44, 44, 54);">：</font><ul>
+<li><font style="color:rgb(44, 44, 54);">如果某些消息比其他消息更重要，可以使用优先级队列来确保这些消息被优先处理。</font></li>
+</ul>
+</li>
+<li><strong><font style="color:rgb(44, 44, 54);">消息批处理</font></strong><font style="color:rgb(44, 44, 54);">：</font><ul>
+<li><font style="color:rgb(44, 44, 54);">允许消费者一次获取多条消息，而不是一条一条地处理。这可以通过设置 </font><code>**&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;prefetch_count&lt;/font&gt;**</code><font style="color:rgb(44, 44, 54);"> 参数来实现，它告诉 RabbitMQ 在等待确认前可以发送给消费者多少消息。</font></li>
+</ul>
+</li>
+</ol>
+<p><font style="color:rgb(44, 44, 54);">处理消息积压时，重要的是要根据具体的应用场景和资源限制选择最合适的方法。同时，持续监控系统性能和消息队列状态对于预防未来的问题也是至关重要的。</font></p>
+<h1 id="消息事务"><a href="#消息事务" class="headerlink" title="消息事务"></a>消息事务</h1><p>RabbitMQ支持消息事务<br><font style="color:rgb(44, 44, 54);">在事务模式下，你可以将一系列的消息发布操作组合成一个原子性的操作。这意味着如果其中任何一个消息发布失败，整个事务都将被回滚，所有之前发布的消息都不会被提交。事务模式使用以下步骤：</font></p>
+<ul>
+<li><font style="color:rgb(44, 44, 54);">调用</font><font style="color:rgb(44, 44, 54);"> </font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;channel.txSelect()&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);"> </font><font style="color:rgb(44, 44, 54);">来开启一个事务。</font></li>
+<li><font style="color:rgb(44, 44, 54);">发布一条或多条消息到队列或交换机。</font></li>
+<li><font style="color:rgb(44, 44, 54);">调用</font><font style="color:rgb(44, 44, 54);"> </font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;channel.txCommit()&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);"> </font><font style="color:rgb(44, 44, 54);">来提交事务，这将使所有消息都被提交。</font></li>
+<li><font style="color:rgb(44, 44, 54);">如果在任何时候发生错误，可以调用 </font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;channel.txRollback()&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);"> 来回滚事务，取消所有之前的操作。</font></li>
+</ul>
+<h1 id="延时队列"><a href="#延时队列" class="headerlink" title="延时队列"></a>延时队列</h1><p><font style="color:rgb(44, 44, 54);">1</font><strong><font style="color:rgb(44, 44, 54);">. 使用死信队列（DLX）</font></strong></p>
+<p><font style="color:rgb(44, 44, 54);">在 RabbitMQ 中，可以通过设置队列属性中的 </font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;x-message-ttl&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);"> 参数来指定消息的最大存活时间。当消息的 TTL 过期后，它会被发送到预先配置的死信交换机（DLX），从而可以被路由到另一个队列供后续处理。</font></p>
+<p><font style="color:rgb(44, 44, 54);">为了实现延时队列，你需要：</font></p>
+<ul>
+<li><font style="color:rgb(44, 44, 54);">创建一个带有 TTL 设置的队列。</font></li>
+<li><font style="color:rgb(44, 44, 54);">配置一个 DLX（死信交换机）。</font></li>
+<li><font style="color:rgb(44, 44, 54);">将原队列与 DLX 绑定。</font></li>
+</ul>
+<p><font style="color:rgb(44, 44, 54);">2. </font><strong><font style="color:rgb(44, 44, 54);">使用 </font></strong><code>**&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;rabbitmq_delayed_message_exchange&lt;/font&gt;**</code><strong><font style="color:rgb(44, 44, 54);"> 插件</font></strong></p>
+<p><font style="color:rgb(44, 44, 54);">另一种实现延时队列的方法是使用 </font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;rabbitmq_delayed_message_exchange&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);"> 插件。这个插件提供了一种类型的交换机——</font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;x-delayed-message&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);">，它能将消息延迟一定的时间后再发送给绑定的队列。</font></p>
+<p><font style="color:rgb(44, 44, 54);">要使用这个插件：</font></p>
+<ol>
+<li><font style="color:rgb(44, 44, 54);">首先，确保你已经安装了 </font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;rabbitmq_delayed_message_exchange&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);"> 插件。可以通过在命令行运行 </font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;rabbitmq-plugins enable rabbitmq_delayed_message_exchange&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);"> 来启用它。</font></li>
+<li><font style="color:rgb(44, 44, 54);">创建一个类型为 </font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;x-delayed-message&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);"> 的交换机。</font></li>
+<li><font style="color:rgb(44, 44, 54);">在发送消息时，通过设置消息头部的 </font><code>&lt;font style=&quot;color:rgb(44, 44, 54);&quot;&gt;x-delay&lt;/font&gt;</code><font style="color:rgb(44, 44, 54);"> 字段来指定延迟时间（单位为毫秒）。</font></li>
+<li><font style="color:rgb(44, 44, 54);">该插件内部实现机制基于 RabbitMQ 的消息存储和定时任务调度实现</font></li>
+</ol>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/">Maven打包相关知识</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/Zookeeper%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">Zookeeper基本概念</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%98%E7%BD%91"><span class="toc-text">官网</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-text">消息队列的意义</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RabbitMQ%E5%AE%89%E8%A3%85"><span class="toc-text">RabbitMQ安装</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85erlang"><span class="toc-text">安装erlang</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85RabbitMQ"><span class="toc-text">安装RabbitMQ</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RabbitMQ%E9%85%8D%E7%BD%AE"><span class="toc-text">RabbitMQ配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RabbitMQ%E5%8F%AF%E8%A7%86%E5%8C%96%E6%8F%92%E4%BB%B6"><span class="toc-text">RabbitMQ可视化插件</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RabbitMQ%E7%BB%93%E6%9E%84"><span class="toc-text">RabbitMQ结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%A1%BA%E5%BA%8F%E6%80%A7"><span class="toc-text">消息顺序性</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-text">消息持久化</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E6%A8%A1%E5%BC%8F"><span class="toc-text">消息模式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F"><span class="toc-text">消费模式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E8%BF%87%E6%BB%A4"><span class="toc-text">消息过滤</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%B8%A2%E5%A4%B1"><span class="toc-text">消息丢失</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84"><span class="toc-text">集群架构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E7%A7%AF%E5%8E%8B"><span class="toc-text">消息积压</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%BA%8B%E5%8A%A1"><span class="toc-text">消息事务</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BB%B6%E6%97%B6%E9%98%9F%E5%88%97"><span class="toc-text">延时队列</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

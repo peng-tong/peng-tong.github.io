@@ -1,0 +1,668 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>Arthas - 求知之旅</title>
+
+  
+    <meta name="description" content="Arthas 前言这里大部分介绍一下watch、tt这些实时观察方法执行的命令，这些命令的原理都通过字节码增强技术来实现的（动态插入字节码），会在指定类的方法中插入一些切面来实现数据统计和观测，可以通过jad命令查看增强后的字节码，如果观察的对象是接口，那么会把接口所有子类的字节码都增强，去哪儿网的开源项目Bistoury有个在线debug的功能，也是用到了字节码增强技术 另外，下面的命令都涉及到">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Arthas">
+<meta property="og:url" content="http://example.com/2025/01/07/Arthas/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="Arthas 前言这里大部分介绍一下watch、tt这些实时观察方法执行的命令，这些命令的原理都通过字节码增强技术来实现的（动态插入字节码），会在指定类的方法中插入一些切面来实现数据统计和观测，可以通过jad命令查看增强后的字节码，如果观察的对象是接口，那么会把接口所有子类的字节码都增强，去哪儿网的开源项目Bistoury有个在线debug的功能，也是用到了字节码增强技术 另外，下面的命令都涉及到">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/160df0f49ec8cd3704ce2bebacab42e6.png">
+<meta property="og:image" content="http://example.com/images/90aaa954b890f590d6a8b949054a2070.png">
+<meta property="og:image" content="http://example.com/images/61278b603a1439d8685335dc03937196.png">
+<meta property="og:image" content="http://example.com/images/cbebfd8e680be3fed30f045b89ab11be.png">
+<meta property="og:image" content="http://example.com/images/a0baf8429a5a55bb1577528518bcb493.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.750Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.035Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/160df0f49ec8cd3704ce2bebacab42e6.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/%E9%83%A8%E7%BD%B2%E8%BF%90%E7%BB%B4/">部署运维</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.750Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.035Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Arthas</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p><a target="_blank" rel="noopener" href="https://arthas.aliyun.com/doc/commands.html">Arthas</a></p>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这里大部分介绍一下watch、tt这些实时观察方法执行的命令，这些命令的原理都通过字节码增强技术来实现的（动态插入字节码），会在指定类的方法中插入一些切面来实现数据统计和观测，可以通过jad命令查看增强后的字节码，如果观察的对象是接口，那么会把接口所有子类的字节码都增强，去哪儿网的开源项目<a target="_blank" rel="noopener" href="https://github.com/qunarcorp/bistoury">Bistoury</a>有个在线debug的功能，也是用到了字节码增强技术</p>
+<p>另外，下面的命令都涉及到表达式，而且表达式的作用相当重要，表达式具体查看<a target="_blank" rel="noopener" href="https://arthas.aliyun.com/doc/advice-class.html">官方参考文档</a></p>
+<h1 id="ognl"><a href="#ognl" class="headerlink" title="ognl"></a>ognl</h1><p><font style="color:rgb(44, 44, 54);">ognl (Object-Graph Navigation Language) 是一种强大的表达式语言，用于获取和设置 Java 对象的属性，允许开发者通过简洁的语法访问复杂的对象图结构，从而简化了数据绑定、类型转换等任务，包括mybatis在内的很多框架都用到了ognl表达式</font></p>
+<p><font style="color:rgb(44, 44, 54);">arthas的所有表达式就采用ognl，包括对象访问表达式、方法调用表达式、条件判断表达式等，所以了解ognl是很有必要的，</font><a target="_blank" rel="noopener" href="https://github.com/alibaba/arthas/issues/71">arthas ognl表达式的特殊用法</a></p>
+<p><font style="color:rgb(44, 44, 54);">arthas的ognl表达式的root是一个</font>Advice<font style="color:rgb(44, 44, 54);">类的实例，所以表达式中可以直接访问params、target、returnObj等变量，获取非静态变量的表达式都必须基于Advice实例，</font><a target="_blank" rel="noopener" href="https://arthas.aliyun.com/doc/advice-class.html">表达式核心变量</a></p>
+<p><font style="color:rgb(44, 44, 54);">实际用的时候发现了一个问题，4.0.3版本不支持将returnObj这些对象作为ognl调用静态方法的参数，而4.0.4没有这个问题，经过测试，4.0.3版本的Ognl有问题，可以分别引入两个版本的arthas-core.jar包测试以下代码</font></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> cn.hutool.core.map.MapUtil;</span><br><span class="line"><span class="keyword">import</span> com.taobao.arthas.core.command.express.DefaultMemberAccess;</span><br><span class="line"><span class="keyword">import</span> ognl.Ognl;</span><br><span class="line"><span class="keyword">import</span> ognl.OgnlContext;</span><br><span class="line"><span class="keyword">import</span> ognl.OgnlException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String code;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Person</span><span class="params">(String name, String code)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.name = name;</span><br><span class="line">        <span class="built_in">this</span>.code = code;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> OgnlException &#123;</span><br><span class="line">        <span class="type">OgnlContext</span> <span class="variable">ognlContext</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">OgnlContext</span>(<span class="keyword">new</span> <span class="title class_">DefaultMemberAccess</span>(<span class="literal">true</span>), <span class="literal">null</span>, <span class="literal">null</span>, <span class="literal">null</span>);</span><br><span class="line">        Map&lt;Object, Object&gt; map = MapUtil.builder().put(<span class="string">&quot;person&quot;</span>, <span class="keyword">new</span> <span class="title class_">Person</span>(<span class="string">&quot;张三&quot;</span>, <span class="string">&quot;zs0001&quot;</span>)).build();</span><br><span class="line">        <span class="type">Object</span> <span class="variable">value</span> <span class="operator">=</span> Ognl.getValue(<span class="string">&quot;@cn.hutool.json.JSONUtil@toJsonStr(person)&quot;</span>, ognlContext, map);</span><br><span class="line">        System.out.println(value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getCode</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> code;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="watch"><a href="#watch" class="headerlink" title="watch"></a>watch</h1><p>watch命令主要的作用就是查看方法执行过程中的数据，个人认为相当于低配版的debug，可以查看入参、执行类实例、返参，并且可以通过ognl语句查看更详细的数据</p>
+<p>这里使用Web UI举个例子，下面是测试的方法，我们通过watch命令调用fastjson的toJSONString方法，获取返回参数的json字符串</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Select(&quot;select $&#123;selectFields&#125; from $&#123;tbne&#125; t $&#123;ew.customSqlSegment&#125;&quot;)</span></span><br><span class="line">Page&lt;Map&gt; <span class="title function_">page</span><span class="params">(IPage&lt;Map&gt; page, <span class="meta">@Param(&quot;tbne&quot;)</span> String tbne, <span class="meta">@Param(&quot;selectFields&quot;)</span> String selectFields, <span class="meta">@Param(Constants.WRAPPER)</span> Wrapper wrapper)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/160df0f49ec8cd3704ce2bebacab42e6.png"></p>
+<p>可以看到成功返回了经过toJSONString转换的page方法返回参数的json字符串，这里实际执行的命令是</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch  -f com.example.AssetOneMapMapper page -x 1  &#x27;@com.alibaba.fastjson.JSON@toJSONString(returnObj)&#x27;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>-f：代表在函数结束之后(正常返回和异常返回)观察，watch支持在执行前、异常返回时、正常返回时观察，具体参考文档</li>
+<li>com.example.Mapper page：要观察的类以及方法，arthas支持通过表达式匹配，即可以匹配多个类或者方法</li>
+<li>-x：表示遍历深度，比如入参有一个List，为1的时候只会展示List本身（即List的toString），那么为2的时候将会展示每个元素的内容，依次类推，默认值是 1，最大为4</li>
+<li>‘@com.alibaba.fastjson.JSON@toJSONString(returnObj)’：ognl表达式，表示使用JSON类的静态方法toJSONString转换returnObj，returnObj为观察方法的返回参数</li>
+</ol>
+<h1 id="tt"><a href="#tt" class="headerlink" title="tt"></a>tt</h1><p>tt(<font style="color:rgb(44, 62, 80);">TimeTunnel </font>)命令的主要就是记录下指定方法每次调用的入参和返回信息，并能对这些不同的时间下调用进行观测，可以立即为方法执行数据的时空隧道，是watch命令的高配版，<strong>主要缺点是内存问题，需要手动释放，不然可能导致OOM</strong>，有两个比较重要的功能</p>
+<ol>
+<li><strong>查看数据</strong>：tt命令会记录每次执行涉及到的数据，然后我们可以通过命令查看记录的数据（对象的内部变量也可以查看），这一点比watch更强大，如果需要通过watch查看某个对象数据的内部变量，需要提交watch命令，然后再触发方法，每次更改需要重复这些操作，比较麻烦，而tt命令在这方面更简单</li>
+<li><strong>重新调用</strong>：tt命令可以通过id重新调用记录的具体某一次方法的执行</li>
+</ol>
+<p>这里使用Web UI举个例子，测试的方法仍然使用上面watch测试的方法，我们调用tt命令记录方法执行</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Select(&quot;select $&#123;selectFields&#125; from $&#123;tbne&#125; t $&#123;ew.customSqlSegment&#125;&quot;)</span></span><br><span class="line">Page&lt;Map&gt; <span class="title function_">page</span><span class="params">(IPage&lt;Map&gt; page, <span class="meta">@Param(&quot;tbne&quot;)</span> String tbne, <span class="meta">@Param(&quot;selectFields&quot;)</span> String selectFields, <span class="meta">@Param(Constants.WRAPPER)</span> Wrapper wrapper)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/90aaa954b890f590d6a8b949054a2070.png"></p>
+<p>这里可以看到记录下了两次调用，这里参数没展示全，实际上还有returnObj以及throwExp，可以自行测试，这里实际执行的命令是</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tt -t com.example.Mapper page</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>-t：表示希望记录下方法的每次执行情况，在记录时使用该参数，和-p、-w都属于主参数</li>
+<li>com.example.Mapper page：表示要观察的类以及方法，arthas支持通过表达式匹配，即可以匹配多个类或者方法</li>
+</ol>
+<p><strong>查看数据</strong></p>
+<p>上面已经记录下了方法的执行情况，我们可以通过tt -w命令查看某一次记录的数据，需要使用ognl表达式，比如我现在想要查看page方法第四个入参wrapper的customSqlSegment的值，使用以下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tt -w &#x27;params[3].customSqlSegment&#x27; -x 1 -i 1005</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>-w ‘params[3].customSqlSegment’：-w表示希望查看某一次记录的数据，后面是ognl表达式，即要查看的具体值（在上面的watch命令中有介绍），这里不仅可以查看数据，还可以调用方法，和-t、-p都属于主参数</li>
+<li>-x 1：表示便利深度为1，既不展示数据内部的值</li>
+<li>-i 1005：表示要查看的记录编号</li>
+</ol>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/61278b603a1439d8685335dc03937196.png"></p>
+<p>可以看到返回了customSqlSegment具体的值</p>
+<p><strong>重新调用</strong></p>
+<p>想要使用重新调用的功能，直接点击Web UI上的invoke按钮即会重新调用，具体命令为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tt -i 1005 -p</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>-i 1005：代表要重新调用的记录</li>
+<li>-p：表示希望重新调用某一次记录，和-t、-w都属于主参数</li>
+</ol>
+<h1 id="trace"><a href="#trace" class="headerlink" title="trace"></a>trace</h1><p>trace命令的主要作用就是查看方法内部调用路径以及路径上的每个节点上耗时，不过trace只支持跟踪一级方法的调用链路，下个要继续查看下一级方法，可以使用<a target="_blank" rel="noopener" href="https://arthas.aliyun.com/doc/trace.html#%E5%8A%A8%E6%80%81-trace">动态trace</a>，另外trace默认不会返回jdk方法的耗时，需要显式设置<code>--skipJDKMethod false</code></p>
+<p>这里使用Web UI举个例子，下面是测试的方法，我们通过trace命令查看这个方法的耗时</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">response</span><span class="params">(ChannelHandlerContext ctx, Http2FrameStream requestStream, String responseBody)</span> &#123;</span><br><span class="line">    <span class="type">DefaultHttp2HeadersFrame</span> <span class="variable">headersFrame</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultHttp2HeadersFrame</span>(</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">DefaultHttp2Headers</span>().status(<span class="string">&quot;200&quot;</span>)</span><br><span class="line">        .set(HttpHeaderNames.DATE, DateTime.now().toString())</span><br><span class="line">        .set(HttpHeaderNames.CONTENT_TYPE, <span class="string">&quot;text/plain;charset=UTF-8&quot;</span>)</span><br><span class="line">        .set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(responseBody.length()))</span><br><span class="line">    ).stream(requestStream);</span><br><span class="line">    <span class="type">DefaultHttp2DataFrame</span> <span class="variable">dataFrame</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultHttp2DataFrame</span>(Unpooled.wrappedBuffer(responseBody.getBytes()), <span class="literal">true</span>).stream(requestStream);</span><br><span class="line">    ctx.writeAndFlush(headersFrame);</span><br><span class="line">    ctx.writeAndFlush(dataFrame);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/cbebfd8e680be3fed30f045b89ab11be.png"></p>
+<p>可以看到返回response方法下各个方法的耗时，这里实际执行的命令是</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trace com.example.netty.server.Https2Server$Http2ServerHandler response</span><br></pre></td></tr></table></figure>
+
+<p>这里仅涉及到需要观察的类以及方法，arthas支持通过表达式匹配，即可以匹配多个类或者方法，其他命令参考官网</p>
+<h1 id="stack"><a href="#stack" class="headerlink" title="stack"></a>stack</h1><p>stack命令的主要作用就是观察方法被调用的调用路径，在实际中可以用来确定当前方法是怎么被调用的，个人认为也可以理解为低配版的debug</p>
+<p>这里使用Web UI举个例子，下面是测试的方法，我们通过stack命令查看这个方法的被调用路径</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">response</span><span class="params">(ChannelHandlerContext ctx, Http2FrameStream requestStream, String responseBody)</span> &#123;</span><br><span class="line">    <span class="type">DefaultHttp2HeadersFrame</span> <span class="variable">headersFrame</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultHttp2HeadersFrame</span>(</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">DefaultHttp2Headers</span>().status(<span class="string">&quot;200&quot;</span>)</span><br><span class="line">        .set(HttpHeaderNames.DATE, DateTime.now().toString())</span><br><span class="line">        .set(HttpHeaderNames.CONTENT_TYPE, <span class="string">&quot;text/plain;charset=UTF-8&quot;</span>)</span><br><span class="line">        .set(HttpHeaderNames.CONTENT_LENGTH, String.valueOf(responseBody.length()))</span><br><span class="line">    ).stream(requestStream);</span><br><span class="line">    <span class="type">DefaultHttp2DataFrame</span> <span class="variable">dataFrame</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">DefaultHttp2DataFrame</span>(Unpooled.wrappedBuffer(responseBody.getBytes()), <span class="literal">true</span>).stream(requestStream);</span><br><span class="line">    ctx.writeAndFlush(headersFrame);</span><br><span class="line">    ctx.writeAndFlush(dataFrame);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/a0baf8429a5a55bb1577528518bcb493.png"></p>
+<p>可以看到，返回了调用链路、classloader、线程id以及线程名，这里实际的命令是</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stack com.example.netty.server.Https2Server$Http2ServerHandler response</span><br></pre></td></tr></table></figure>
+
+<p>这里只涉及到了观察的类以及方法，arthas支持通过表达式匹配，即可以匹配多个类或者方法，其他参数参考官网</p>
+<h1 id="monitor"><a href="#monitor" class="headerlink" title="monitor"></a><font style="color:rgb(44, 62, 80);">monitor</font></h1><p>monitor命令的主要作用就是对观察方法的调用进行监控（对一定时间内方法执行情况进行统计），这里不详细介绍了</p>
+<h1 id="retransform"><a href="#retransform" class="headerlink" title="retransform"></a><font style="color:rgb(44, 62, 80);">retransform</font></h1><p>这个命令是单独的，和上面的命令不是一个原理，动态插入字节码可以理解为修改class的字节码，而retransform是替换class的字节码</p>
+<p>retransform的作用是重新加载class文件，可以用来实现热部署，一般可以配合jad（反编译）、mc（编译）两个命令来使用</p>
+<p>在这里介绍是因为平时用的可能也比较多，而且有个小问题记录一下，通过retransform替换class字节码后，通过stop关闭arhtas，重新打开arthas后，使用jad命令，会发现被替换过的类还原成替换之前的了，在实际使用时需要注意，参考：<a target="_blank" rel="noopener" href="https://github.com/alibaba/arthas/issues/1891#issuecomment-900784364">https://github.com/alibaba/arthas/issues/1891#issuecomment-900784364</a></p>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/Java%20Reentrantlock/">Java Reentrantlock</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/">使用Kubeadm部署kubernetes</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ognl"><span class="toc-text">ognl</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#watch"><span class="toc-text">watch</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#tt"><span class="toc-text">tt</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#trace"><span class="toc-text">trace</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#stack"><span class="toc-text">stack</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#monitor"><span class="toc-text">monitor</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#retransform"><span class="toc-text">retransform</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

@@ -1,0 +1,695 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>RocketMQ集群 - 求知之旅</title>
+
+  
+    <meta name="description" content="集群搭建基于NameServer，RocketMQ搭建集群比较简单，通过少许配置即可完成 RocketMQ对于搭建集群给出了示例配置，在安装目录就可以看到   2m-2s-async：普通集群，二主二从，异步复制 2m-2s-sync：普通集群，二主二从，同步复制 2m-noslave：普通集群，二主无从，异步复制，不过实际文件夹中多了一个broker-trace container：contai">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RocketMQ集群">
+<meta property="og:url" content="http://example.com/2025/01/07/RocketMQ%E9%9B%86%E7%BE%A4/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="集群搭建基于NameServer，RocketMQ搭建集群比较简单，通过少许配置即可完成 RocketMQ对于搭建集群给出了示例配置，在安装目录就可以看到   2m-2s-async：普通集群，二主二从，异步复制 2m-2s-sync：普通集群，二主二从，同步复制 2m-noslave：普通集群，二主无从，异步复制，不过实际文件夹中多了一个broker-trace container：contai">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/c4bd7a16f8c19a1c99fe00193b055090.png">
+<meta property="og:image" content="http://example.com/images/b3d29dd3d414843efc6d4ee1e05662a6.png">
+<meta property="og:image" content="http://example.com/images/0b202370129f4e5ebeea4c794f7a35dc.png">
+<meta property="og:image" content="http://example.com/images/f99f77811d98a3dd89256ab132f0661e.png">
+<meta property="og:image" content="http://example.com/images/cfa58f0ad53c017ca3f224b70a3cf3e4.png">
+<meta property="og:image" content="http://example.com/images/cd1f1364d8ed1101b11dd4d6e68311e4.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.776Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.026Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/c4bd7a16f8c19a1c99fe00193b055090.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/RocketMQ/">RocketMQ</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.776Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.026Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>RocketMQ集群</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h1 id="集群搭建"><a href="#集群搭建" class="headerlink" title="集群搭建"></a>集群搭建</h1><p>基于NameServer，RocketMQ搭建集群比较简单，通过少许配置即可完成</p>
+<p>RocketMQ对于搭建集群给出了示例配置，在安装目录就可以看到</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/c4bd7a16f8c19a1c99fe00193b055090.png"></p>
+<ol>
+<li>2m-2s-async：普通集群，二主二从，异步复制</li>
+<li>2m-2s-sync：普通集群，二主二从，同步复制</li>
+<li>2m-noslave：普通集群，二主无从，异步复制，不过实际文件夹中多了一个broker-trace</li>
+<li>container：container集群，二主二从，同步复制，<font style="color:rgb(25, 27, 31);">RocketMQ 5.0 引入了 BrokerContainer 的概念，一个 BrokerContainer 中可以部署多个 Broker，这些 Broker 拥有独立的端口，功能完全独立，可以通过 admin 来增加或减少 Broker</font></li>
+<li>controller：controller集群，文件夹中主要包含了controller组件集群搭建，为了dledger模式存在的问题，RocketMQ 5.0以后推出了Controller模式</li>
+<li>dledger：dledger集群，为了解决普通集群无法主备切换的问题，文件夹中给出了三个节点的示例，可以理解为一主二从</li>
+</ol>
+<h1 id="普通集群"><a href="#普通集群" class="headerlink" title="普通集群"></a>普通集群</h1><p>这里以二主二从的同步复制举例</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>需要注意，逻辑上来讲，主节点和对应的从节点构成的是一个Broker，对于客户端或者服务端来说，是集群中的一个Broker</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">brokerClusterName</span>=<span class="string">DefaultCluster #集群名称</span></span><br><span class="line"><span class="attr">brokerName</span>=<span class="string">broker-a              #节点名称，主从节点的节点名称相同，以确定主从关系</span></span><br><span class="line"><span class="attr">brokerId</span>=<span class="string">0                       #节点id，0表示主节点 大于0表示从节点，需要和brokerRole对应</span></span><br><span class="line"><span class="attr">namesrvAddr</span>=<span class="string">127.0.0.1:9876       #NameServer地址</span></span><br><span class="line"><span class="attr">deleteWhen</span>=<span class="string">04                    #磁盘文件空间充足情况下，默认每天什么时候执行删除过期文件，默认04表示凌晨4点</span></span><br><span class="line"><span class="attr">fileReservedTime</span>=<span class="string">48              #文件保留时间，默认72小时，表示非当前写文件最后一次更新时间加上filereservedtime小于当前时间，该文件将被清理</span></span><br><span class="line"><span class="attr">brokerRole</span>=<span class="string">SYNC_MASTER           #节点角色，SYNC_MASTER，代表为主节点，并且为同步复制</span></span><br><span class="line"><span class="attr">flushDiskType</span>=<span class="string">ASYNC_FLUSH        #刷盘策略，ASYNC_FLUSH为异步刷盘</span></span><br><span class="line"><span class="attr">storePathRootDir</span>=<span class="string">D:/store-a      #持久化目录，如果是同一台机器部署测试，每个节点都需要配置一个目录</span></span><br><span class="line"><span class="attr">listenPort</span>=<span class="string">10110                 #监听端口，如果是同一台机器部署测试，各节点的端口需要间隔大一点，因为rocketmq同时会占用相邻的几个节点</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">brokerClusterName</span>=<span class="string">DefaultCluster #集群名称</span></span><br><span class="line"><span class="attr">brokerName</span>=<span class="string">broker-a              #节点名称，主从节点的节点名称相同，以确定主从关系</span></span><br><span class="line"><span class="attr">brokerId</span>=<span class="string">1                       #节点id，0表示主节点 大于0表示从节点，需要和brokerRole对应</span></span><br><span class="line"><span class="attr">namesrvAddr</span>=<span class="string">127.0.0.1:9876       #NameServer地址</span></span><br><span class="line"><span class="attr">deleteWhen</span>=<span class="string">04                    #磁盘文件空间充足情况下，默认每天什么时候执行删除过期文件，默认04表示凌晨4点</span></span><br><span class="line"><span class="attr">fileReservedTime</span>=<span class="string">48              #文件保留时间，默认72小时，表示非当前写文件最后一次更新时间加上filereservedtime小于当前时间，该文件将被清理</span></span><br><span class="line"><span class="attr">brokerRole</span>=<span class="string">SLAVE                 #节点角色，SLAVE为从节点</span></span><br><span class="line"><span class="attr">flushDiskType</span>=<span class="string">ASYNC_FLUSH        #刷盘策略，ASYNC_FLUSH为异步刷盘</span></span><br><span class="line"><span class="attr">storePathRootDir</span>=<span class="string">D:/store-a-s    #持久化目录，如果是同一台机器部署测试，每个节点都需要配置一个目录</span></span><br><span class="line"><span class="attr">listenPort</span>=<span class="string">10210                 #监听端口，如果是同一台机器部署测试，各节点的端口需要间隔大一点，因为rocketmq同时会占用相邻的几个节点</span></span><br></pre></td></tr></table></figure>
+
+<p>集群b和集群a配置类似，只有节点名称不相同，另外单机测试部署的话，storePathRootDir和listenPort两个配置也需要注意</p>
+<p>有了配置文件之后，使用命令mqbroker.cmd -c &lt;对应的配置文件&gt;分别启动对应节点即可，部署完通过dashboard查看，可以看到以下内容</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/b3d29dd3d414843efc6d4ee1e05662a6.png"></p>
+<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><ol>
+<li><strong><font style="color:rgb(44, 44, 54);">消息处理</font></strong><font style="color:rgb(44, 44, 54);">：</font><ul>
+<li><font style="color:rgb(44, 44, 54);">支持负载均衡，写入消息时，会负载到不同的broker，一条消息可能写入broker-a，也可能写入broker-b，这样可以减轻每个节点的压力，并且支持</font><strong><font style="color:rgb(44, 44, 54);">水平扩展</font></strong></li>
+<li><font style="color:rgb(44, 44, 54);">只有主节点可以处理写入请求，写入主节点后，再同步给从节点</font></li>
+<li><font style="color:rgb(44, 44, 54);">从节点支持处理读取请求，但是有限制，需要slaveReadEnable配置为true，并且未读取的消息超过RocketMQ可以占用物理内存（受accessMessageInMemoryMaxRatio参数控制）时（此时因为内存放不下，会需要读取硬盘，影响性能），会从从节点读取</font></li>
+</ul>
+</li>
+<li><strong><font style="color:rgb(44, 44, 54);">高可用性限制</font></strong><font style="color:rgb(44, 44, 54);">：</font><ul>
+<li>普通集群不支持故障转移，如果主节点挂掉了，从节点无法升级主节点，该Broker无法继续提供服务，对于整个rocketmq集群来说会丢失部分消息，并且会加大其他borker的压力</li>
+</ul>
+</li>
+</ol>
+<h1 id="dledger集群"><a href="#dledger集群" class="headerlink" title="dledger集群"></a>dledger集群</h1><p>官方参考文档：<a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/bestPractice/02dledger">https://rocketmq.apache.org/zh/docs/bestPractice/02dledger</a></p>
+<p>dledger集群和普通集群的区别是故障转移，由于dledger集群采用raft算法，对于节点数量有要求，结构上只有这一点区别，其余结构是一样的。持久化方面，由于引入raft算法，commitlog日志和rocketmq原本的文件结构是不一样的</p>
+<h2 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h2><p>由于dledger集群采用raft算法选主，所以不需要brokerId和flushDiskType等涉及角色的配置</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">brokerClusterName</span> = <span class="string">RaftCluster        #集群名称</span></span><br><span class="line"><span class="attr">brokerName</span>=<span class="string">RaftNode00                  #节点名称，参考普通集群</span></span><br><span class="line"><span class="attr">namesrvAddr</span>=<span class="string">127.0.0.1:9876             #NameServer地址</span></span><br><span class="line"><span class="attr">enableDLegerCommitLog</span>=<span class="string">true             #是否启动 DLedger	</span></span><br><span class="line"><span class="attr">dLegerGroup</span>=<span class="string">RaftNode00                 #DLedger Raft Group的名字，建议和 brokerName 保持一致</span></span><br><span class="line"><span class="attr">dLegerSelfId</span>=<span class="string">n0                        #节点id, 必须属于dLegerPeers中的一个，同 Group 内各个节点要唯一</span></span><br><span class="line"><span class="attr">sendMessageThreadPoolNums</span>=<span class="string">16           #发送线程个数，建议配置成 Cpu 核数</span></span><br><span class="line"><span class="attr">dLegerPeers</span>=<span class="string">n0-127.0.0.1:40911;n1-127.0.0.1:40912;n2-127.0.0.1:40913 #DLedger Group 内各节点的端口信息，同一个 Group 内的各个节点配置必须要保证一致</span></span><br><span class="line"><span class="attr">listenPort</span>=<span class="string">10110                       #监听端口号</span></span><br><span class="line"><span class="attr">storePathRootDir</span>=<span class="string">D:\store-n0           #持久化目录</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">brokerClusterName</span> = <span class="string">RaftCluster        #集群名称</span></span><br><span class="line"><span class="attr">brokerName</span>=<span class="string">RaftNode00                  #节点名称，参考普通集群</span></span><br><span class="line"><span class="attr">namesrvAddr</span>=<span class="string">127.0.0.1:9876             #NameServer地址</span></span><br><span class="line"><span class="attr">enableDLegerCommitLog</span>=<span class="string">true             #是否启动 DLedger	</span></span><br><span class="line"><span class="attr">dLegerGroup</span>=<span class="string">RaftNode00                 #DLedger Raft Group的名字，建议和 brokerName 保持一致</span></span><br><span class="line"><span class="attr">dLegerSelfId</span>=<span class="string">n1                        #节点id, 必须属于dLegerPeers中的一个，同 Group 内各个节点要唯一</span></span><br><span class="line"><span class="attr">sendMessageThreadPoolNums</span>=<span class="string">16           #发送线程个数，建议配置成 Cpu 核数</span></span><br><span class="line"><span class="attr">dLegerPeers</span>=<span class="string">n0-127.0.0.1:40911;n1-127.0.0.1:40912;n2-127.0.0.1:40913 #DLedger Group 内各节点的端口信息，同一个 Group 内的各个节点配置必须要保证一致</span></span><br><span class="line"><span class="attr">listenPort</span>=<span class="string">10210                       #监听端口号</span></span><br><span class="line"><span class="attr">storePathRootDir</span>=<span class="string">D:\store-n1           #持久化目录</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">brokerClusterName</span> = <span class="string">RaftCluster        #集群名称</span></span><br><span class="line"><span class="attr">brokerName</span>=<span class="string">RaftNode00                  #节点名称，参考普通集群</span></span><br><span class="line"><span class="attr">namesrvAddr</span>=<span class="string">127.0.0.1:9876             #NameServer地址</span></span><br><span class="line"><span class="attr">enableDLegerCommitLog</span>=<span class="string">true             #是否启动 DLedger	</span></span><br><span class="line"><span class="attr">dLegerGroup</span>=<span class="string">RaftNode00                 #DLedger Raft Group的名字，建议和 brokerName 保持一致</span></span><br><span class="line"><span class="attr">dLegerSelfId</span>=<span class="string">n1                        #节点id, 必须属于dLegerPeers中的一个，同 Group 内各个节点要唯一</span></span><br><span class="line"><span class="attr">sendMessageThreadPoolNums</span>=<span class="string">16           #发送线程个数，建议配置成 Cpu 核数</span></span><br><span class="line"><span class="attr">dLegerPeers</span>=<span class="string">n0-127.0.0.1:40911;n1-127.0.0.1:40912;n2-127.0.0.1:40913 #DLedger Group 内各节点的端口信息，同一个 Group 内的各个节点配置必须要保证一致</span></span><br><span class="line"><span class="attr">listenPort</span>=<span class="string">10210                       #监听端口号</span></span><br><span class="line"><span class="attr">storePathRootDir</span>=<span class="string">D:\store-n1           #持久化目录</span></span><br></pre></td></tr></table></figure>
+
+<p>除了选主方面以及dLeger特有的配置，其余配置都一样。这里的举例是三个节点构成一个broker，但是dLeger仍然支持多个broker，这一点和普通集群是一样的</p>
+<p>有了配置文件之后，使用命令mqbroker.cmd -c &lt;对应的配置文件&gt;分别启动对应节点即可，部署完通过dashboard查看，可以看到以下内容</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/0b202370129f4e5ebeea4c794f7a35dc.png"></p>
+<h2 id="特点-1"><a href="#特点-1" class="headerlink" title="特点"></a>特点</h2><ol>
+<li><strong>消息复制</strong><ul>
+<li>在消息处理方面，dledger集群和普通集群是一致的，支持多broker负载均衡，以及水平扩展，在读、写请求方面也是一致的，但是dledger模式下，持久化文件发生了变化，比普通集群更加复杂</li>
+</ul>
+</li>
+<li><strong>高可用性</strong><ul>
+<li>dledger集群支持故障转移，主节点掉线后，通过raft算法从从节点中选出一个升为主节点</li>
+</ul>
+</li>
+<li><strong>数量限制</strong><ul>
+<li>由于采用raft算法，dledger集群下一个broker起码有三个节点才能实现故障转移，即起码三节点才能接受主节点下线</li>
+</ul>
+</li>
+<li><strong>节点复制</strong><ul>
+<li>由于采用raft算法，基于多数派协议，主节点收到消息后，将消息复制给从节点并且需要收到半数以上的从节点的回复才能返回确认给客户端，相当于一种折中的同步复制，并且是强制的</li>
+</ul>
+</li>
+</ol>
+<h1 id="controller集群"><a href="#controller集群" class="headerlink" title="controller集群"></a>controller集群</h1><p>官方参考文档：<a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq/tree/develop/docs/cn/controller">https://github.com/apache/rocketmq/tree/develop/docs/cn/controller</a></p>
+<p>controller集群的出现是为了解决dledger集群的问题，以下是官网的介绍</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/f99f77811d98a3dd89256ab132f0661e.png"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/cfa58f0ad53c017ca3f224b70a3cf3e4.png"></p>
+<p>这里之所以叫它为controller集群是因为引入了一个新的组件：controller，它替代了dledger模式故障转移的功能，可以理解为，在普通集群中引入controller即可实现故障转移，而不需要再使用dledger模式，controller组件集群本身使用的是raft算法，所以也会受限于raft算法的一些约束，比如节点数量等，不过raft算法只针对controller组件本身的主从切换，即故障转移的能力，但是只要controller主节点还在，仍然可以为broker组件服务</p>
+<h2 id="配置-2"><a href="#配置-2" class="headerlink" title="配置"></a>配置</h2><p>controller组件可以单独部署，也可以部署在nameserver上，这里为了不和nameserver混淆，采用controller单独部署，如果想和nameserver部署在一起，也可以参考示例文件</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">controllerDLegerGroup</span> = <span class="string">group1          #DLedger Raft Group 的名字，同一个 DLedger Raft Group 保持一致即可</span></span><br><span class="line"><span class="attr">controllerDLegerPeers</span> = <span class="string">n0-127.0.0.1:9878;n1-127.0.0.1:9868;n2-127.0.0.1:9858  #DLedger Group 内各节点的端口信息，同一个 Group 内的各个节点配置必须要保证一致</span></span><br><span class="line"><span class="attr">controllerDLegerSelfId</span> = <span class="string">n0             #节点 id，必须属于 controllerDLegerPeers 中的一个；同 Group 内各个节点要唯一</span></span><br><span class="line"><span class="attr">controllerStorePath</span> = <span class="string">D:\controller-n0  #controller 日志存储位置。controller 是有状态的，controller 重启或宕机需要依靠日志来恢复数据，该目录非常重要，不可以轻易删除</span></span><br><span class="line"><span class="attr">enableElectUncleanMaster</span> = <span class="string">false        #是否可以从 SyncStateSet 以外选举 Master，若为 true，可能会选取数据落后的副本作为 Master 而丢失消息，默认为 false</span></span><br><span class="line"><span class="attr">notifyBrokerRoleChanged</span> = <span class="string">true          #当 Broker 副本组上角色发生变化时是否主动通知，默认为 true</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">controllerDLegerGroup</span> = <span class="string">group1          #DLedger Raft Group 的名字，同一个 DLedger Raft Group 保持一致即可</span></span><br><span class="line"><span class="attr">controllerDLegerPeers</span> = <span class="string">n0-127.0.0.1:9878;n1-127.0.0.1:9868;n2-127.0.0.1:9858  #DLedger Group 内各节点的端口信息，同一个 Group 内的各个节点配置必须要保证一致</span></span><br><span class="line"><span class="attr">controllerDLegerSelfId</span> = <span class="string">n1             #节点 id，必须属于 controllerDLegerPeers 中的一个；同 Group 内各个节点要唯一</span></span><br><span class="line"><span class="attr">controllerStorePath</span> = <span class="string">D:\controller-n1  #controller 日志存储位置。controller 是有状态的，controller 重启或宕机需要依靠日志来恢复数据，该目录非常重要，不可以轻易删除</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">controllerDLegerGroup</span> = <span class="string">group1          #DLedger Raft Group 的名字，同一个 DLedger Raft Group 保持一致即可</span></span><br><span class="line"><span class="attr">controllerDLegerPeers</span> = <span class="string">n0-127.0.0.1:9878;n1-127.0.0.1:9868;n2-127.0.0.1:9858  #DLedger Group 内各节点的端口信息，同一个 Group 内的各个节点配置必须要保证一致</span></span><br><span class="line"><span class="attr">controllerDLegerSelfId</span> = <span class="string">n2             #节点 id，必须属于 controllerDLegerPeers 中的一个；同 Group 内各个节点要唯一</span></span><br><span class="line"><span class="attr">controllerStorePath</span> = <span class="string">D:\controller-n2  #controller 日志存储位置。controller 是有状态的，controller 重启或宕机需要依靠日志来恢复数据，该目录非常重要，不可以轻易删除</span></span><br></pre></td></tr></table></figure>
+
+<p>controller配置完，使用mqcontroller.cmd -c &lt;配置文件&gt;分别启动即可</p>
+<p>配置broker，这里只构建一个broker，两个节点，这里因为使用controller的主备切换功能，所以不需要角色相关配置，这里仅展示重要配置</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">brokerClusterName</span> = <span class="string">DefaultCluster</span></span><br><span class="line"><span class="attr">brokerName</span> = <span class="string">broker-a</span></span><br><span class="line"><span class="attr">enableControllerMode</span> = <span class="string">true             #roker controller 模式的总开关，只有该值为 true，自动主动切换模式才会打开。默认为 false</span></span><br><span class="line"><span class="attr">controllerAddr</span> = <span class="string">127.0.0.1:9878;127.0.0.1:9868;127.0.0.1:9858  #controller 的地址，多个 controller 中间用分号隔开</span></span><br><span class="line"><span class="attr">namesrvAddr</span> = <span class="string">127.0.0.1:9876            #nameserver的地址</span></span><br><span class="line"><span class="attr">allAckInSyncStateSet</span> = <span class="string">true             #若该值为 true，则一条消息需要复制到 SyncStateSet 中的每一个副本才会向客户端返回成功，可以保证消息不丢失。默认为 false</span></span><br><span class="line"><span class="attr">listenPort</span> = <span class="string">30911</span></span><br><span class="line"><span class="attr">storePathRootDir</span>=<span class="string">D:\store-n0</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">brokerClusterName</span> = <span class="string">DefaultCluster</span></span><br><span class="line"><span class="attr">brokerName</span> = <span class="string">broker-a</span></span><br><span class="line"><span class="attr">enableControllerMode</span> = <span class="string">true             #roker controller 模式的总开关，只有该值为 true，自动主从切换模式才会打开。默认为 false</span></span><br><span class="line"><span class="attr">controllerAddr</span> = <span class="string">127.0.0.1:9878;127.0.0.1:9868;127.0.0.1:9858  #controller 的地址，多个 controller 中间用分号隔开</span></span><br><span class="line"><span class="attr">namesrvAddr</span> = <span class="string">127.0.0.1:9876            #nameserver的地址</span></span><br><span class="line"><span class="attr">allAckInSyncStateSet</span> = <span class="string">true             #若该值为 true，则一条消息需要复制到 SyncStateSet 中的每一个副本才会向客户端返回成功，可以保证消息不丢失。默认为 false</span></span><br><span class="line"><span class="attr">listenPort</span> = <span class="string">30921</span></span><br><span class="line"><span class="attr">storePathRootDir</span>=<span class="string">D:\store-n1</span></span><br></pre></td></tr></table></figure>
+
+<p>配置完broker后，使用mqbroker.cmd -c &lt;配置文件&gt; 分别启动即可，部署完通过dashboard查看</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/cd1f1364d8ed1101b11dd4d6e68311e4.png"></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>这次部署过程中遇到一个问题，全部启动之后，dashboard查询不到集群信息，mqadmin也查询不到broker信息，然后<strong>通过broker日志发现这个报错：</strong></p>
+<p><strong><font style="color:rgb(34, 34, 38);">fail to send registerBrokerToController request to controller</font></strong></p>
+<p><font style="color:rgb(34, 34, 38);">解决办法：</font><a target="_blank" rel="noopener" href="https://blog.csdn.net/u010600106/article/details/140011027">https://blog.csdn.net/u010600106/article/details/140011027</a></p>
+<p>应该是controller的注册信息出现了问题，所以需要将相关文件删除</p>
+<h2 id="特点-2"><a href="#特点-2" class="headerlink" title="特点"></a>特点</h2><p>controller集群下的broker和普通集群除了实现了故障转移，其他都是一样，所以在升级、迁移方面都非常方便</p>
+<ol>
+<li><strong>消息处理</strong><ul>
+<li>在消息处理方面，controller集群和普通集群是一样的，并且持久化和普通集群也是一样的，所以在文件处理方面，比dledger模式更有优势</li>
+</ul>
+</li>
+<li><strong>高可用性</strong><ul>
+<li>和dledger集群一样支持broker故障转移，但是dledger集群是通过改造broker实现的，但是系统复杂度也随之变大，所以导致了不少新的问题，而controller集群在普通集群的基础上引入controller组件实现故障转移，虽然引入了新的组件，但是由于可以使用之前的代码，系统复杂度要比dledger模式小很多</li>
+</ul>
+</li>
+<li><strong>数量要求</strong><ul>
+<li>由于采用raft算法，controller组件要实现自身的故障转移仍然需要起码三个节点，但是对于broker的故障转移，controller组件哪怕只有一个主节点也可以实现，实际情况broker一般都会比controller多得多，所以在这一点上，controller比dledger系统复杂度也小了很多</li>
+</ul>
+</li>
+<li><strong>节点复制</strong><ul>
+<li>由于controller集群实际上可以理解为普通集群+controller组件，所以在节点复制方面，和普通集群是一样的，可以通过参数控制同步复制还是异步复制，比dledger模式要灵活</li>
+</ul>
+</li>
+</ol>
+<h1 id="container集群"><a href="#container集群" class="headerlink" title="container集群"></a>container集群</h1><p>container集群主要目的是为了提高单节点资源利用率，实现方法为在单节点上部署多个broker，节点内的多个broker是完全隔离的，但是会复用线程、网络等资源，提高了资源利用率</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq/blob/develop/docs/cn/BrokerContainer.md">rocketmq&#x2F;docs&#x2F;cn&#x2F;BrokerContainer.md at develop · apache&#x2F;rocketmq</a></p>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/RocketMQ/">RocketMQ</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/Kafka/">Kafka</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA"><span class="toc-text">集群搭建</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E9%9B%86%E7%BE%A4"><span class="toc-text">普通集群</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE"><span class="toc-text">配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E7%82%B9"><span class="toc-text">特点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#dledger%E9%9B%86%E7%BE%A4"><span class="toc-text">dledger集群</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE-1"><span class="toc-text">配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E7%82%B9-1"><span class="toc-text">特点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#controller%E9%9B%86%E7%BE%A4"><span class="toc-text">controller集群</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE-2"><span class="toc-text">配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98"><span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E7%82%B9-2"><span class="toc-text">特点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#container%E9%9B%86%E7%BE%A4"><span class="toc-text">container集群</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>

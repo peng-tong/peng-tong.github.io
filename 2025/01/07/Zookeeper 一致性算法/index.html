@@ -1,0 +1,651 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1" theme-name="Stellar" theme-version="1.29.1">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>Zookeeper 一致性算法 - 求知之旅</title>
+
+  
+    <meta name="description" content="文章开头先介绍一篇非常好的文章：带你彻底认识 Paxos 算法、Zab 协议和 Raft 协议的原理和本质 简介   我们都知道分布式系统要遵守CAP原则，即一致性（Consistency）、可用性（Availability）、分区容错性（Partition tolerance）只能同时满足两个。      而zookeeper满足的是CP（需要注意这里的C是在选主的过程中会停止服务，而读写过程中">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Zookeeper 一致性算法">
+<meta property="og:url" content="http://example.com/2025/01/07/Zookeeper%20%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="求知之旅">
+<meta property="og:description" content="文章开头先介绍一篇非常好的文章：带你彻底认识 Paxos 算法、Zab 协议和 Raft 协议的原理和本质 简介   我们都知道分布式系统要遵守CAP原则，即一致性（Consistency）、可用性（Availability）、分区容错性（Partition tolerance）只能同时满足两个。      而zookeeper满足的是CP（需要注意这里的C是在选主的过程中会停止服务，而读写过程中">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/0a9412cce9aba52ed4b81049d43e844e.png">
+<meta property="article:published_time" content="2025-01-07T13:11:51.880Z">
+<meta property="article:modified_time" content="2025-01-07T13:13:58.006Z">
+<meta property="article:author" content="Peng Tong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/0a9412cce9aba52ed4b81049d43e844e.png">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.1">
+
+  
+    <link rel="shortcut icon" href="/icon/logo.png">
+  
+
+  
+
+  <link href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/icon/logo.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">求知之旅</div><div class="sub normal cap">业精于勤荒于嬉</div><div class="sub hover cap" style="opacity:0">行成于思毁于随</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper markdown"><div class="widget-header dis-select"><span class="name">欢迎您的访问</span></div><div class="widget-body fs14"><p>学习之旅漫漫，重点、感悟易逝，备好纸笔勤记录，方可沉淀知识，本站内容引用自本人语雀知识库，欢迎前往</p>
+
+<div class="linklist center" style="grid-template-columns:repeat(1,1fr);">
+<a class="link" title="前往语雀" target="_blank" rel="noopener" href="https://www.yuque.com/pengtong-pt/st01q1"><div class="flex"><span>前往语雀</span></div></a></div></div></widget>
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span></div><div class="widget-body fs14"><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Minikube%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Minikube部署kubernetes</span></a><a class="item title" href="/2025/01/07/%E4%BD%BF%E7%94%A8Kubeadm%E9%83%A8%E7%BD%B2kubernetes/"><span class="title">使用Kubeadm部署kubernetes</span></a><a class="item title" href="/2025/01/07/Maven%E6%89%93%E5%8C%85%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">Maven打包相关知识</span></a><a class="item title" href="/2025/01/07/Arthas/"><span class="title">Arthas</span></a><a class="item title" href="/2025/01/07/Wireshark/"><span class="title">Wireshark</span></a><a class="item title" href="/2025/01/07/WebSocket%E5%8D%8F%E8%AE%AE%E8%A7%84%E5%88%99%E5%8F%8A%E4%BD%BF%E7%94%A8/"><span class="title">WebSocket协议规则及使用</span></a><a class="item title" href="/2025/01/07/%E5%85%B3%E4%BA%8E%E5%85%AC%E7%BD%91ip/"><span class="title">关于公网ip</span></a><a class="item title" href="/2025/01/07/Http2%20Header%E5%A4%B4%E9%83%A8%E5%8E%8B%E7%BC%A9%E7%AE%97%E6%B3%95/"><span class="title">Http2 Header头部压缩算法</span></a><a class="item title" href="/2025/01/07/TCP%E7%9B%B8%E5%85%B3%E7%9F%A5%E8%AF%86/"><span class="title">TCP相关知识</span></a><a class="item title" href="/2025/01/07/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><span class="title">Java基础知识</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/Zookeeper/">Zookeeper</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2025-01-07T13:11:51.880Z">2025-01-07</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2025-01-07T13:13:58.006Z">2025-01-07</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>Zookeeper 一致性算法</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><p>文章开头先介绍一篇非常好的文章：<a target="_blank" rel="noopener" href="https://xie.infoq.cn/article/c8b1db19b9ec6dbb0b9764c3e">带你彻底认识 Paxos 算法、Zab 协议和 Raft 协议的原理和本质</a></p>
+<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><pre><code>   我们都知道分布式系统要遵守CAP原则，即一致性（Consistency）、可用性（Availability）、分区容错性（Partition tolerance）只能同时满足两个。  
+</code></pre>
+<p>  而zookeeper满足的是CP（需要注意这里的C是在选主的过程中会停止服务，而读写过程中并不是强一致性），但是做到一致性并不是那么容易，在科学家和程序员的不断探索中，就出现了很多的一致性协议和算法。比如 2PC（两阶段提交），3PC（三阶段提交），Paxos算法等等。<br>  这里还要提到一个问题，就是信道可靠性的问题，如果消息在传输过程中就已经被修改过了，那么哪怕算法再厉害，最终也不可能做到一致性，所以这里就要提到<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E6%8B%9C%E5%8D%A0%E5%BA%AD%E5%B0%86%E5%86%9B%E9%97%AE%E9%A2%98/265656?fr=aladdin">拜占庭将军问题</a>(在不可靠信道上试图通过消息传递的方式达到一致性是不可能的)</p>
+<h1 id="2PC协议"><a href="#2PC协议" class="headerlink" title="2PC协议"></a>2PC协议</h1><p>2PC协议具体过程分为两步</p>
+<ol>
+<li>协调者告诉所有参与者可以进行事务，但不提交，并在执行完事务后，返回执行结果给协调者</li>
+<li>协调者收到所有参与者的反馈之后，根据得到的反馈告诉所有参与者提交或者回滚</li>
+</ol>
+<p>该协议非常简单，同时也有很多问题，尤为明显的就是过于依赖协调者，这将带来不少问题</p>
+<ol>
+<li>协调者如果挂掉，整个系统都将不可用，当然了，可以考虑将协调者设为集群，那么协调者之间的一致性又变成了新的问题，这明显在使问题变复杂。</li>
+<li>所有参与者过于依赖协调者的指令，如果执行完事务，因为网络等原因没有收到协调者的指令，将会一直处于等待的阶段，占用资源，并且第二阶段不是所有参与者都成功收到指令，极有可能造成数据不一致</li>
+</ol>
+<h1 id="3PC协议"><a href="#3PC协议" class="headerlink" title="3PC协议"></a>3PC协议</h1><p>3P协议具体过程分为3步</p>
+<ul>
+<li>CanCommit: 协调者向所有参与者发起请求，询问参与者是否可以进行事务，参与者收到请求后，向协调者反馈，有需要的可以直接做好准备</li>
+<li>PreCommit: 协调者根据上个步骤参与者的反馈向参与者发出执行事务或者取消事务的请求，参与者收到请求后进行相应的操作，如果是执行事务，则执行完后，将 Undo 和 Redo 信息写入事务日志中并反馈给参与者。需要注意，如果参与者在这个过程中长时间没有收到协调者的执行事务或者取消事物的请求，那么参与者将直接取消事务，因为这是参与者并不知道其他参与者是否可以进行事务，所以只能取消事务</li>
+<li>DoCommit: 协调者根据上个步骤参与者的反馈向参与者发出提交事务或者回滚事物的请求，参与者收到请求后进行相应的操作。需要注意如果参与者在这个过程中长时间没有收到协调者的提交事务或者回滚事务的请求，那么参与者将直接提交事务，因为经过第一个阶段，基本可以认为其他参与者都可以执行并且提交事务</li>
+</ul>
+<p>  可以看到，3PC比2PC多了一个CanCommit阶段并且加入了超时机制，CanCommit阶段可以提高事务执行成功的可能性并且是第三阶段超时机制的根据。超时机制的存在让参与者不在过分依赖协调者，有了一定的自主性，克服了2PC过于依赖协调者所导致的问题。但是3PC并不是就完事大吉了，因为超时机制本身就有一定的风险，并且通信次数过多提高了通信带来的风险。</p>
+<h1 id="Paxos算法"><a href="#Paxos算法" class="headerlink" title="Paxos算法"></a>Paxos算法</h1><ol>
+<li>两个角色 <ul>
+<li>Proposer提案者：负责提出 proposal，同时它也是表决者，只不过对于自己的提案，默认同意，每个提案者在提出提案时都会首先获取到一个 具有全局唯一性的、递增的提案编号N，即在整个集群中是唯一的编号 N，然后将该编号赋予其要提出的提案，在第一阶段是只将提案编号发送给所有的表决者。</li>
+<li>Acceptor表决者：每个表决者在 accept 某提案后，会将该提案编号N记录在本地，这样每个表决者中保存的已经被 accept 的提案中会存在一个编号最大的提案，其编号假设为 maxN。每个表决者仅会 accept 编号大于自己本地 maxN 的提案，在批准提案时表决者会将以前接受过的最大编号的提案作为响应反馈给 Proposer</li>
+<li>Learner学习者：即不参与表决的角色，当一个提案被通过后，学习者再从提案者或者表决者那里获取提案</li>
+</ul>
+</li>
+<li>两个阶段 <ul>
+<li>prepare阶段：提案者获取一个提案编号，并将获取的提案编号发送给所有表决者，表决者收到提案编号后，与自己本地最大的提案编号进行对比，如果新的提案编号大于本地最大的提案编号，将本地的提案编号更新，批准提案并返回结果给提案者，如果新的提案编号不大于本地最大的提案编号，则不批准并返回本地最大提案编号以及提案内容给提案者（这一步可以理解为通过对比拿到集群中最大编号的提案）</li>
+<li>accept阶段：提案者收到一半以上表决者批准的消息后，如果有收到表决者反馈提案编号大于本次提案编号，则以收到的编号和内容为准，重复第一阶段，将提案编号与提案内容提交给表决者，表决者收到提案后，接受提案内容并返回结果给提案者，如果提案者收到一半以上表决者同意的消息，那么会继续发消息让不同意的表决者无条件的接受提案，到这一步同时会涉及到一个learner学习的过程，即提案者会将本次提案也提交给学习者，或者表决者推送给学习者</li>
+</ul>
+</li>
+</ol>
+<p>  Paxos算法也有他的不足，就是如果同时存在多个提案者的时候，容易造成死循环，不过可以限定只能有一个提案者就可以了。<br>  Multi-Paxos协议就是Paxos的基础上限定了一个提案者成为Leader，如果没有Leader或者Leader宕机了，则通过prepare阶段选举Leader，所以当Leader的存在时可以不再进行prepare阶段，因为Leader的特点保证它的提案编号一定会是最大的</p>
+<h1 id="ZAB协议"><a href="#ZAB协议" class="headerlink" title="ZAB协议"></a>ZAB协议</h1><p>作为一个优秀高效且可靠的分布式协调框架，ZooKeeper 在解决分布式数据一致性问题时并没有直接使用 Paxos ，而是专门定制了一致性协议叫做 ZAB(ZooKeeper Atomic Broadcast) 原子广播协议，该协议能够很好地支持崩溃恢复</p>
+<p><strong><font style="color:rgb(53, 53, 53);">先了解一些基本概念</font></strong></p>
+<ul>
+<li><font style="color:rgb(48, 48, 48);">electionEpoch：</font><strong><font style="color:rgb(48, 48, 48);">每执行一次 leader 选举，electionEpoch 就会自增，用来标记 leader 选举的轮次</font></strong></li>
+<li><font style="color:rgb(48, 48, 48);">peerEpoch：</font><strong><font style="color:rgb(48, 48, 48);">每次 leader 选举完成之后，都会选举出一个新的 peerEpoch，用来标记事务请求所属的轮次</font></strong></li>
+<li><font style="color:rgb(48, 48, 48);">zxid：</font><strong><font style="color:rgb(48, 48, 48);">事务请求的唯一标记，由 leader 服务器负责进行分配高 32 位是上述的 peerEpoch，低 32 位是请求的计数，从 0 开始。</font></strong></li>
+<li><font style="color:rgb(48, 48, 48);">lastprocessZxid：最后一次 commit 的事务请求的 zxid</font></li>
+<li><font style="color:rgb(48, 48, 48);">LinkedList committedLog、long maxCommittedLog、long minCommittedLog：ZooKeeper 会保存最近一段时间内执行的事务请求议案，个数限制默认为 500 个议案。committedLog 就是用来保存议案的列表，maxCommittedLog 表示最大议案的 zxid，minCommittedLog 表示 committedLog 中最小议案的 zxid。</font></li>
+<li><font style="color:rgb(48, 48, 48);">ConcurrentMap&lt;Long, Proposal&gt; outstandingProposals：Leader 拥有的属性，每当提出一个议案，都会将该议案存放至 outstandingProposals，一旦议案被过半认同了，就要提交该议案，则从 outstandingProposals 中删除该议案。</font></li>
+<li><font style="color:rgb(48, 48, 48);">ConcurrentLinkedQueue toBeApplied：Leader 拥有的属性，每当准备提交一个议案，就会将该议案存放至该列表中，一旦议案应用到 ZooKeeper 的内存树中了，然后就可以将该议案从 toBeApplied 中删除。</font></li>
+<li><font style="color:rgb(48, 48, 48);">state：当前服务器的状态</font></li>
+<li><font style="color:rgb(48, 48, 48);">recvQueue：消息接收队列，用于存放那些从其他服务器接收到的消息。</font></li>
+<li><font style="color:rgb(48, 48, 48);">queueSendMap：消息发送队列，用于保存那些待发送的消息，按照 SID 进行分组。</font></li>
+<li><font style="color:rgb(48, 48, 48);">senderWorkerMap：发送器集合，每个 SenderWorker 消息发送器，都对应一台远程 Zookeeper 服务器，负责消息的发送，也按照 SID 进行分组。</font></li>
+<li><font style="color:rgb(48, 48, 48);">lastMessageSent：最近发送过的消息，为每个 SID 保留最近发送过的一个消息。</font></li>
+</ul>
+<ol>
+<li>三个角色 <ul>
+<li>Leader 领导者、Follower跟随者、Observer观察者 （在zookeeper基础中介绍过）</li>
+</ul>
+</li>
+<li>两个模式 <ul>
+<li>消息广播模式：我们可以理解为zookeeper的写机制，当客户端写入数据到zookeeper集群，数据首先会写入Leader，随后Leader将消息广播给Follwer，Follwer接收完消息后并反馈给Leader，Leader收到一半以上的反馈后，返回客户端zxid（每次写操作唯一的事务id），代表写入成功（<strong>从这里可以看出zookeeper的写操作不是强一致性，即客户端收到写入成功时并不保证zookeeper所有节点均已成功写入数据</strong>），并将消息广播给Observer<br><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/images/0a9412cce9aba52ed4b81049d43e844e.png"> </li>
+<li>奔溃恢复模式：我们可以理解为Leader的选举机制，从字面意思可以看出是当Leader宕机时触发的机制，但其实zookeeper集群初始化选择Leader也是采取这个机制。 <ol>
+<li>具体过程：每个节点发起投票，首先投票给自己，投票内容为（myid，zxid），随后将投票内容广播出去，每个节点收到其他节点的投票内容后，与自己的投票内容作比较，如果zxid大于本地的zxid（如果zxid等于，则比较myid），则更新自己的投票并广播出去，最后当一个节点收到了超过一半的票时，就把自己设为Leader，其他节点设为Follower并根据Leader更新提案(数据)。需要注意，如果上一个Leader宕机时，还有数据没有广播到其他节点，当上一个Leader恢复而其他节点又已经选出了Leader时，上一个Leader的数据就会被抛弃（确保已经被Leader提交的提案最终能够被所有的Follower提交 和 跳过那些已经被丢弃的提案 。）</li>
+<li>例子：</li>
+</ol>
+</li>
+</ul>
+</li>
+</ol>
+<p>  假设我们集群中有3台机器，那也就意味着我们需要两台以上同意（超过半数）。比如这个时候我们启动了 server1 ，它会首先 投票给自己 ，投票内容为服务器的 myid 和 ZXID ，因为初始化所以 ZXID 都为0，此时 server1 发出的投票为 (1,0)。但此时 server1 的投票仅为1，所以不能作为 Leader ，此时还在选举阶段所以整个集群处于 Looking 状态。<br>  接着 server2 启动了，它首先也会将投票选给自己(2,0)，并将投票信息广播出去（server1也会，只是它那时没有其他的服务器了），server1 在收到 server2 的投票信息后会将投票信息与自己的作比较。首先它会比较 ZXID ，ZXID 大的优先为 Leader，如果相同则比较 myid，myid 大的优先作为 Leader。所以此时server1 发现 server2 更适合做 Leader，它就会将自己的投票信息更改为(2,0)然后再广播出去，之后server2 收到之后发现和自己的一样无需做更改，并且自己的 投票已经超过半数 ，则 确定 server2 为 Leader，server1 也会将自己服务器设置为 Following 变为 Follower。整个服务器就从 Looking 变为了正常状态。<br>  当 server3 启动发现集群没有处于 Looking 状态时，它会直接以 Follower 的身份加入集群。<br>还是前面三个 server 的例子，如果在整个集群运行的过程中 server2 挂了，那么整个集群会如何重新选举 Leader 呢？其实和初始化选举差不多。<br>  首先毫无疑问的是剩下的两个 Follower 会将自己的状态 从 Following 变为 Looking 状态 ，然后每个 server 会向初始化投票一样首先给自己投票（这不过这里的 zxid 可能不是0了，这里为了方便随便取个数字）。<br>  假设 server1 给自己投票为(1,99)，然后广播给其他 server，server3 首先也会给自己投票(3,95)，然后也广播给其他 server。server1 和 server3 此时会收到彼此的投票信息，和一开始选举一样，他们也会比较自己的投票和收到的投票（zxid 大的优先，如果相同那么就 myid 大的优先）。这个时候 server1 收到了 server3 的投票发现没自己的合适故不变，server3 收到 server1 的投票结果后发现比自己的合适于是更改投票为(1,99)然后广播出去，最后 server1 收到了发现自己的投票已经超过半数就把自己设为 Leader，server3 也随之变为 Follower。</p>
+
+
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2025/01/07/Sharding%20JDBC+Druid+Dynamic/">Sharding JDBC+Druid+Dynamic</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2025/01/07/Spring%20Boot%E6%95%B4%E5%90%88GRPC/">Spring Boot整合GRPC</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">Peng Tong</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.1">Stellar 1.29.1</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2PC%E5%8D%8F%E8%AE%AE"><span class="toc-text">2PC协议</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3PC%E5%8D%8F%E8%AE%AE"><span class="toc-text">3PC协议</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Paxos%E7%AE%97%E6%B3%95"><span class="toc-text">Paxos算法</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ZAB%E5%8D%8F%E8%AE%AE"><span class="toc-text">ZAB协议</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js`,
+    marked: `https://cdn.jsdelivr.net/npm/marked@13.0.1/lib/marked.umd.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.1" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/flying-pages@2/flying-pages.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@19.1.3/dist/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css`,
+    js: `https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>
